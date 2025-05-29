@@ -26,14 +26,14 @@
       "target": "nsis",
       "icon": "./build/icon.ico"
     },
-    "nsis": {
-      "installerIcon": "./build/icon.ico",
-      "uninstallerIcon": "./build/icon.ico",
-      "uninstallDisplayName": "Dead's Add-on Utilities",
-      "oneClick": false,
-      "allowToChangeInstallationType": true,
-      "perMachine": false
-    },
+"nsis": {
+    "installerIcon": "./build/icon.ico",
+    "uninstallerIcon": "./build/icon.ico",
+    "uninstallDisplayName": "Dead's Add-on Utilities",
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true 
+  },
     "mac": {
       "target": "dmg",
       "icon": "./build/icon.icns"
