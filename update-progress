@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Update Progress</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        h2 { margin-top: 0; }
+        #progress-bar-container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        #progress-bar {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1%;
+            text-align: center;
+            border-radius: 5px;
+            width: 0%;
+        }
+        #progress-text { margin-bottom: 10px; }
+        #changelog-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            height: 100px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        #restart-button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        #restart-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        #error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Downloading Update</h2>
+    <div id="changelog-container">
+        <h3>Changelog:</h3>
+        <pre id="changelog"></pre>
+    </div>
+    <div id="progress-text">Download Progress: <span id="progress-percent">0%</span></div>
+    <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+    </div>
+    <div id="error-message" class="hidden"></div>
+    <button id="restart-button" class="hidden">Restart Now</button>
+
+    <script src="./update-progress.js"></script>
+</body>
+</html>
