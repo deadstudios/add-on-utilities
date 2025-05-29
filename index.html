@@ -1,910 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dead's Add-on Utilities</title>
-    <style>
-        /* General Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --bg-primary: #1e1e2e;
-    --bg-secondary: #2a2a3a;
-    --bg-tertiary: #3a3a4a;
-    --text-primary: #ffffff;
-    --text-secondary: #b8c2d9;
-    --text-muted: #8a93a9;
-    --accent-primary: #6c5ce7;
-    --accent-secondary: #a29bfe;
-    --success: #00b894;
-    --error: #d63031;
-    --warning: #fdcb6e;
-    --border: #4a4a5a;
-    --shadow: rgba(0, 0, 0, 0.3);
-    --sidebar-width: 250px;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    overflow-x: hidden;
-}
-
-.app-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--bg-secondary);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem;
-}
-
-.logo {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.logo h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.main-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex: 1;
-}
-
-.nav-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    text-align: left;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    transition: all 0.3s ease;
-}
-
-.nav-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-}
-
-.nav-btn.active {
-    background-color: rgba(108, 92, 231, 0.2);
-    color: var(--accent-primary);
-}
-
-.nav-btn i {
-    width: 20px;
-    text-align: center;
-}
-
-/* Sidebar Actions */
-.sidebar-actions {
-    margin-top: auto;
-    padding: 1rem 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-}
-
-.sidebar-btn {
-    width: 100%;
-    background-color: var(--accent-primary);
-    border: none;
-    color: white;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.sidebar-btn:hover {
-    background-color: var(--accent-secondary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-}
-
-.sidebar-btn:active {
-    transform: translateY(0px);
-}
-
-.version {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-top: 1rem;
-    text-align: center;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.content-section {
-    display: none;
-    flex: 1;
-    overflow-y: auto;
-    padding: 2rem;
-}
-
-.content-section.active {
-    display: block;
-}
-
-.section-header {
-    margin-bottom: 2rem;
-}
-
-.section-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.section-header p {
-    color: var(--text-secondary);
-    font-size: 1rem;
-}
-
-/* Dashboard */
-.welcome-card {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-.welcome-card h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: var(--accent-primary);
-}
-
-.welcome-card p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-}
-
-.quick-actions {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.action-card {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px var(--shadow);
-}
-
-.action-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px var(--shadow);
-    background-color: var(--bg-tertiary);
-}
-
-.action-card i {
-    font-size: 2rem;
-    color: var(--accent-primary);
-    margin-bottom: 1rem;
-}
-
-.action-card h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-}
-
-.action-card p {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-}
-
-/* Form Cards */
-.form-card {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 4px 12px var(--shadow);
-    margin-bottom: 2rem;
-}
-
-/* Form Elements */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.file-input-group {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.file-input-group input {
-    flex: 1;
-}
-
-input[type="text"] {
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    width: 100%;
-}
-
-input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-}
-
-input[type="text"]::placeholder {
-    color: var(--text-muted);
-}
-
-/* Buttons */
-.btn {
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn:hover {
-    background-color: var(--bg-secondary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-.btn-primary {
-    background-color: var(--accent-primary);
-    border-color: var(--accent-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: var(--accent-secondary);
-    border-color: var(--accent-secondary);
-}
-
-.btn-success {
-    background-color: var(--success);
-    border-color: var(--success);
-    color: white;
-}
-
-.btn-success:hover {
-    background-color: #00a884;
-    border-color: #009876;
-}
-
-.btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-}
-
-/* Options Grid */
-.options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.option-card {
-    background-color: var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px var(--shadow);
-}
-
-.option-card h3 {
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.2s ease;
-}
-
-.checkbox-label:hover {
-    color: var(--text-primary);
-}
-
-.checkbox-label input {
-    margin-right: 0.75rem;
-    width: 1.1em;
-    height: 1.1em;
-    cursor: pointer;
-}
-
-/* Pack Selection */
-.pack-selection {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.pack-card {
-    background-color: var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px var(--shadow);
-}
-
-.pack-card h3 {
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Action Section */
-.action-section {
-    display: flex;
-    justify-content: center;
-    margin-top: 2rem;
-}
-
-/* Progress Bar */
-.progress-container {
-    margin-top: 2rem;
-    background-color: var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px var(--shadow);
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    color: var(--text-secondary);
-}
-
-.progress-bar {
-    height: 8px;
-    background-color: var(--bg-secondary);
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-    width: 0%;
-    transition: width 0.3s ease;
-}
-
-.current-file {
-    margin-top: 0.75rem;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    font-style: italic;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Credits Grid */
-.credits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.credit-card {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px var(--shadow);
-}
-
-.credit-card h3 {
-    margin-bottom: 1rem;
-    color: var(--accent-primary);
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.credit-card p, .credit-card li {
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-}
-
-.credit-card ul {
-    padding-left: 1.25rem;
-}
-
-/* Status Bar */
-.status-bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 1.5rem;
-    background-color: var(--bg-tertiary);
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.status-left, .status-right {
-    display: flex;
-    align-items: center;
-}
-
-/* Modals */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: var(--bg-secondary);
-    border-radius: 12px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-}
-
-.modal-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header.error {
-    background-color: rgba(220, 53, 69, 0.1);
-    border-bottom-color: var(--error);
-}
-
-.modal-header h3 {
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 0 0.5rem;
-}
-
-.modal-body {
-    padding: 1.5rem;
-}
-
-.modal-body p {
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-
-.modal-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .app-container {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        padding: 1rem;
-    }
-    
-    .main-nav {
-        flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-    }
-    
-    .nav-btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-    
-    .sidebar-actions {
-        margin-top: 1rem;
-        border-top: none;
-        border-bottom: none;
-        padding: 0.5rem 0;
-    }
-    
-    .content-section {
-        padding: 1rem;
-    }
-    
-    .options-grid, .pack-selection, .credits-grid {
-        grid-template-columns: 1fr;
-    }
-}
-    </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h1>Dead's Add-on Utilities</h1>
-            </div>
-            <nav class="main-nav">
-                <button class="nav-btn active" data-section="dashboard">
-                    <i class="fas fa-home"></i> Dashboard
+
+<body class="bg-gray-950 text-gray-100 font-sans min-h-screen flex flex-col">
+    <div class="container mx-auto p-6 flex-grow flex flex-col items-center justify-center">
+        <div id="main-menu"
+            class="bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md text-center border border-gray-700">
+            <h1 class="text-4xl font-extrabold mb-8 text-blue-400 drop-shadow-lg">Dead's Add-on Utilities</h1>
+            <div class="space-y-4">
+                <button id="obfuscator-btn"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 border border-blue-500">
+                    Obfuscator
                 </button>
-                <button class="nav-btn" data-section="obfuscator">
-                    <i class="fas fa-lock"></i> Obfuscator
+                <button id="packager-btn"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 border border-green-500">
+                    Add-on Packager
                 </button>
-                <button class="nav-btn" data-section="packager">
-                    <i class="fas fa-box"></i> Packager
+                <button id="credits-btn"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 border border-purple-500">
+                    Credits
                 </button>
-                <button class="nav-btn" data-section="credits">
-                    <i class="fas fa-heart"></i> Credits
-                </button>
-            </nav>
-            
-            <!-- Check Updates Button -->
-            <div class="sidebar-actions">
-                <button id="check-updates-btn" class="sidebar-btn">
-                    <i class="fas fa-sync-alt"></i> Check Updates
+                <button id="updater-btn"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-700 hover:to-yellow-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 border border-yellow-500">
+                    Check for Updates
                 </button>
             </div>
-            
-            <div class="version">v1.0.0</div>
-        </aside>
+        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Dashboard Section -->
-            <section id="dashboard" class="content-section active">
-                <div class="welcome-card">
-                    <h2>Welcome to Dead's Add-on Utilities</h2>
-                    <p>Professional tools for Minecraft Bedrock Edition addon developers</p>
+        <div id="obfuscator-section"
+            class="hidden bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-3xl mt-8 border border-gray-700">
+            <h2 class="text-3xl font-bold mb-6 text-blue-400">JavaScript Obfuscator</h2>
+
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Input Script Folder:</label>
+                <div class="flex items-center space-x-2">
+                    <button id="obfuscator-input-folder-btn"
+                        class="flex-shrink-0 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">
+                        Select Folder
+                    </button>
+                    <span id="obfuscator-input-folder-path"
+                        class="flex-grow p-2 bg-gray-700 text-gray-200 rounded-md border border-gray-600 truncate">No folder
+                        selected.</span>
                 </div>
-                
-                <div class="quick-actions">
-                    <div class="action-card" data-section="obfuscator">
-                        <i class="fas fa-lock"></i>
-                        <h3>Script Obfuscator</h3>
-                        <p>Protect your JavaScript code from reverse engineering</p>
-                    </div>
-                    
-                    <div class="action-card" data-section="packager">
-                        <i class="fas fa-box"></i>
-                        <h3>Packager</h3>
-                        <p>Create .mcaddon files from your behavior and resource packs</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Obfuscator Section -->
-            <section id="obfuscator" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-lock"></i> Script Obfuscator</h2>
-                    <p>Protect your Minecraft Bedrock scripts by obfuscating the code</p>
-                </div>
-
-                <div class="form-card">
-                    <div class="form-group">
-                        <label>Input Scripts Folder:</label>
-                        <div class="file-input-group">
-                            <input type="text" id="input-path" placeholder="Select folder containing your scripts..." readonly>
-                            <button id="select-input" class="btn btn-primary">
-                                <i class="fas fa-folder-open"></i> Browse
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Output Folder:</label>
-                        <div class="file-input-group">
-                            <input type="text" id="output-path" placeholder="Select where to save obfuscated scripts..." readonly>
-                            <button id="select-output" class="btn btn-primary">
-                                <i class="fas fa-folder-open"></i> Browse
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="options-grid">
-                        <div class="option-card">
-                            <h3><i class="fas fa-cog"></i> Obfuscation Options</h3>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="enable-obfuscation" checked>
-                                <span class="checkmark"></span>
-                                Enable Obfuscation
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="compact-code" checked>
-                                <span class="checkmark"></span>
-                                Compact Code
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="string-array">
-                                <span class="checkmark"></span>
-                                String Array Protection
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="dead-code-injection">
-                                <span class="checkmark"></span>
-                                Dead Code Injection
-                            </label>
-                        </div>
-
-                        <div class="option-card">
-                            <h3><i class="fas fa-sliders-h"></i> Additional Options</h3>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="remove-comments" checked>
-                                <span class="checkmark"></span>
-                                Remove Comments
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="disable-console">
-                                <span class="checkmark"></span>
-                                Disable Console Output
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="control-flow">
-                                <span class="checkmark"></span>
-                                Control Flow Flattening
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="debug-protection">
-                                <span class="checkmark"></span>
-                                Debug Protection
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="action-section">
-                        <button id="obfuscate-btn" class="btn btn-success btn-large">
-                            <i class="fas fa-lock"></i> Start Obfuscation
-                        </button>
-                    </div>
-
-                    <div id="obfuscation-progress" class="progress-container" style="display: none;">
-                        <div class="progress-info">
-                            <span id="progress-text">Processing...</span>
-                            <span id="progress-count">0 / 0</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div id="progress-fill" class="progress-fill"></div>
-                        </div>
-                        <div id="current-file" class="current-file"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Packager Section -->
-            <section id="packager" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-box"></i> Packager</h2>
-                    <p>Package your behavior and resource packs into a single .mcaddon file</p>
-                </div>
-
-                <div class="form-card">
-                    <div class="form-group">
-                        <label>Pack Name:</label>
-                        <input type="text" id="pack-name" placeholder="Enter pack name..." value="My Addon">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Version:</label>
-                        <input type="text" id="pack-version" placeholder="1.0.0" value="1.0.0">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="is-beta">
-                            <span class="checkmark"></span>
-                            Mark as BETA version
-                        </label>
-                    </div>
-
-                    <div class="pack-selection">
-                        <div class="pack-card">
-                            <h3><i class="fas fa-robot"></i> Behavior Pack</h3>
-                            <div class="file-input-group">
-                                <input type="text" id="bp-path" placeholder="Select behavior pack folder..." readonly>
-                                <button id="select-bp" class="btn btn-primary">
-                                    <i class="fas fa-folder-open"></i> Browse
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="pack-card">
-                            <h3><i class="fas fa-image"></i> Resource Pack (Optional)</h3>
-                            <div class="file-input-group">
-                                <input type="text" id="rp-path" placeholder="Select resource pack folder..." readonly>
-                                <button id="select-rp" class="btn btn-primary">
-                                    <i class="fas fa-folder-open"></i> Browse
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="action-section">
-                        <button id="package-btn" class="btn btn-success btn-large">
-                            <i class="fas fa-box"></i> Create .mcaddon
-                        </button>
-                    </div>
-
-                    <div id="package-progress" class="progress-container" style="display: none;">
-                        <div class="progress-info">
-                            <span id="package-text">Packaging...</span>
-                            <span id="package-count">0 files</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div id="package-fill" class="progress-fill"></div>
-                        </div>
-                        <div id="package-file" class="current-file"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Credits Section -->
-            <section id="credits" class="content-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-heart"></i> Credits</h2>
-                    <p>Thanks to everyone who made this project possible</p>
-                </div>
-
-                <div class="credits-grid">
-                    <div class="credit-card">
-                        <h3><i class="fas fa-user"></i> Developer</h3>
-                        <p><strong>deadstudios</strong></p>
-                        <p>Creator of Dead's Add-on Utilities</p>
-                    </div>
-                    
-                    <div class="credit-card">
-                        <h3><i class="fas fa-code"></i> Technologies Used</h3>
-                        <ul>
-                            <li>Electron - Desktop app framework</li>
-                            <li>JavaScript Obfuscator - Code obfuscation</li>
-                            <li>Node.js - Runtime environment</li>
-                            <li>Archiver - ZIP file creation</li>
-                        </ul>
-                    </div>
-
-                    <div class="credit-card">
-                        <h3><i class="fas fa-info-circle"></i> About</h3>
-                        <p>Dead's Add-on Utilities is a professional tool designed specifically for Minecraft Bedrock Edition addon developers.</p>
-                        <p>Protect your scripts from reverse engineering while maintaining functionality.</p>
-                    </div>
-
-                    <div class="credit-card">
-                        <h3><i class="fas fa-tag"></i> Version</h3>
-                        <p><strong>v1.0.0</strong></p>
-                        <p>Built with ❤️ for the Minecraft community</p>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Success Modal -->
-    <div id="success-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-check-circle"></i> Success!</h3>
-                <button class="modal-close">&times;</button>
             </div>
-            <div class="modal-body">
-                <p id="success-message"></p>
+
+            <div class="mb-6">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Output Folder:</label>
+                <div class="flex items-center space-x-2">
+                    <button id="obfuscator-output-folder-btn"
+                        class="flex-shrink-0 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">
+                        Select Folder
+                    </button>
+                    <span id="obfuscator-output-folder-path"
+                        class="flex-grow p-2 bg-gray-700 text-gray-200 rounded-md border border-gray-600 truncate">No folder
+                        selected.</span>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary modal-ok">OK</button>
+
+            <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="compactCode"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>Compact Code</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="controlFlowFlattening"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>Control Flow Flattening</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="deadCodeInjection"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>Dead Code Injection</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="debugProtection"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>Debug Protection</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="disableConsoleOutput"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>Disable Console Output</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="stringArray"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>String Array</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="stringArrayShuffle"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>String Array Shuffle</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" id="stringArrayThreshold"
+                        class="form-checkbox h-5 w-5 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500">
+                    <span>String Array Threshold (0-1)</span>
+                    <input type="number" id="stringArrayThresholdValue" min="0" max="1" step="0.1" value="0.5"
+                        class="ml-2 w-20 p-1 bg-gray-700 text-gray-200 rounded-md border border-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                </label>
+            </div>
+
+            <button id="obfuscate-code-btn"
+                class="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-4 border border-blue-500">
+                Obfuscate Code
+            </button>
+            <textarea id="obfuscator-output"
+                class="w-full h-48 p-4 bg-gray-700 text-gray-200 rounded-md resize-y border border-gray-600"
+                placeholder="Obfuscation status and messages will appear here..." readonly></textarea>
+            <button id="back-to-main-obfuscator"
+                class="mt-6 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">Back
+                to Main Menu</button>
+        </div>
+
+        <div id="packager-section"
+            class="hidden bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-2xl mt-8 border border-gray-700">
+            <h2 class="text-3xl font-bold mb-6 text-green-400">Add-on Packager</h2>
+            <p class="text-gray-300 mb-4">Select your add-on folders and package them into a distributable format.</p>
+
+            <div class="mb-4">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Behavior Pack Folder (Optional):</label>
+                <div class="flex items-center space-x-2">
+                    <button id="bp-folder-input-btn"
+                        class="flex-shrink-0 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">
+                        Select Folder
+                    </button>
+                    <span id="bp-folder-path"
+                        class="flex-grow p-2 bg-gray-700 text-gray-200 rounded-md border border-gray-600 truncate">No folder
+                        selected.</span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-300 text-sm font-bold mb-2">Resource Pack Folder (Optional):</label>
+                <div class="flex items-center space-x-2">
+                    <button id="rp-folder-input-btn"
+                        class="flex-shrink-0 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">
+                        Select Folder
+                    </button>
+                    <span id="rp-folder-path"
+                        class="flex-grow p-2 bg-gray-700 text-gray-200 rounded-md border border-gray-600 truncate">No folder
+                        selected.</span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="flex items-center space-x-2 cursor-pointer text-gray-300">
+                    <input type="checkbox" id="obfuscatePackagedCode"
+                        class="form-checkbox h-5 w-5 text-green-600 bg-gray-700 border-gray-600 rounded focus:ring-green-500">
+                    <span>Obfuscate Behavior Pack Scripts (if present)</span>
+                </label>
+            </div>
+
+            <button id="package-addon-btn"
+                class="w-full py-3 px-6 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-semibold rounded-lg shadow-lg transition duration-300 ease-in-out transform hover:scale-105 mb-4 border border-green-500">
+                Package Add-on
+            </button>
+            <button id="back-to-main-packager"
+                class="mt-6 py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">Back
+                to Main Menu</button>
+        </div>
+
+        <div id="credits-section"
+            class="hidden bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-lg mt-8 border border-gray-700">
+            <h2 class="text-3xl font-bold mb-6 text-purple-400 text-center">Credits</h2>
+            <div class="mb-4 p-4 bg-gray-700 rounded-md border border-gray-600">
+                <h3 class="text-xl font-semibold text-purple-300 mb-2 text-center">Developed By</h3>
+                <p class="text-gray-300 text-center">Dead Studios</p>
+            </div>
+            <div class="mb-4 p-4 bg-gray-700 rounded-md border border-gray-600">
+                <h3 class="text-xl font-semibold text-purple-300 mb-2">Techs Used:</h3>
+                <ul class="list-disc list-inside text-gray-400">
+                    <li>Electron</li>
+                    <li>Tailwind CSS</li>
+                    <li>JavaScript Obfuscator</li>
+                    <li>Archiver</li>
+                    <li>Node.js File System API</li>
+                    <li>Node.js HTTPS Module</li>
+                </ul>
+            </div>
+            <div class="mb-4 p-4 bg-gray-700 rounded-md border border-gray-600">
+                <h3 class="text-xl font-semibold text-purple-300 mb-2">How I Made It:</h3>
+                <p class="text-gray-300 text-left">
+                    This application was built using Electron to create a cross-platform desktop experience.
+                    The user interface is styled with Tailwind CSS for a modern and responsive design.
+                    JavaScript files can be obfuscated using the 'javascript-obfuscator' library.
+                    Add-ons are packaged into ZIP files using the 'archiver' library.
+                    The update checking feature fetches the latest release information directly from the GitHub API.
+                </p>
+            </div>
+            <p class="text-gray-300 text-center">Version: <span id="app-version">1.0.0</span></p>
+            <div class="mt-6 text-center">
+                <button id="back-to-main-credits"
+                    class="py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition duration-300 ease-in-out border border-gray-600">Back
+                    to Main Menu</button>
             </div>
         </div>
     </div>
 
-    <!-- Error Modal -->
-    <div id="error-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header error">
-                <h3><i class="fas fa-exclamation-circle"></i> Error</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="error-message"></p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary modal-ok">OK</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="renderer.js"></script>
+    <script src="./renderer.js"></script>
 </body>
+
 </html>

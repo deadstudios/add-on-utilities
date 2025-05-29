@@ -1,312 +1,349 @@
-// DOM Elements
-const navButtons = document.querySelectorAll('.nav-btn');
-const contentSections = document.querySelectorAll('.content-section');
-const actionCards = document.querySelectorAll('.action-card');
-const quickActionCards = document.querySelectorAll('.quick-actions .action-card');
+// renderer.js (Electron Renderer Process)
+// This script interacts with the DOM and communicates with the main process.
 
-// File selection elements
-const selectInputBtn = document.getElementById('select-input');
-const selectOutputBtn = document.getElementById('select-output');
-const selectBpBtn = document.getElementById('select-bp');
-const selectRpBtn = document.getElementById('select-rp');
-const inputPath = document.getElementById('input-path');
-const outputPath = document.getElementById('output-path');
-const bpPath = document.getElementById('bp-path');
-const rpPath = document.getElementById('rp-path');
-const checkUpdatesBtn = document.getElementById('check-updates-btn');
+// Get references to main menu buttons and sections
+const mainMenu = document.getElementById('main-menu');
+const obfuscatorBtn = document.getElementById('obfuscator-btn');
+const packagerBtn = document.getElementById('packager-btn');
+const creditsBtn = document.getElementById('credits-btn');
+const updaterBtn = document.getElementById('updater-btn');
 
-// Form elements
-const packName = document.getElementById('pack-name');
-const packVersion = document.getElementById('pack-version');
-const isBeta = document.getElementById('is-beta');
+const obfuscatorSection = document.getElementById('obfuscator-section');
+const packagerSection = document.getElementById('packager-section');
+const creditsSection = document.getElementById('credits-section');
 
-// Buttons
-const obfuscateBtn = document.getElementById('obfuscate-btn');
-const packageBtn = document.getElementById('package-btn');
+// Obfuscator elements
+const obfuscatorInputFolderBtn = document.getElementById('obfuscator-input-folder-btn');
+const obfuscatorInputFolderPathSpan = document.getElementById('obfuscator-input-folder-path');
+const obfuscatorOutputFolderBtn = document.getElementById('obfuscator-output-folder-btn');
+const obfuscatorOutputFolderPathSpan = document.getElementById('obfuscator-output-folder-path');
+const obfuscateCodeBtn = document.getElementById('obfuscate-code-btn');
+const obfuscatorOutput = document.getElementById('obfuscator-output');
+const backToMainObfuscator = document.getElementById('back-to-main-obfuscator');
 
-// Progress elements
-const obfuscationProgress = document.getElementById('obfuscation-progress');
-const progressText = document.getElementById('progress-text');
-const progressCount = document.getElementById('progress-count');
-const progressFill = document.getElementById('progress-fill');
-const currentFile = document.getElementById('current-file');
+const compactCodeCheckbox = document.getElementById('compactCode');
+const controlFlowFlatteningCheckbox = document.getElementById('controlFlowFlattening');
+const deadCodeInjectionCheckbox = document.getElementById('deadCodeInjection');
+const debugProtectionCheckbox = document.getElementById('debugProtection');
+const disableConsoleOutputCheckbox = document.getElementById('disableConsoleOutput');
+const stringArrayCheckbox = document.getElementById('stringArray');
+const stringArrayShuffleCheckbox = document.getElementById('stringArrayShuffle');
+const stringArrayThresholdValueInput = document.getElementById('stringArrayThresholdValue');
 
-const packageProgress = document.getElementById('package-progress');
-const packageText = document.getElementById('package-text');
-const packageCount = document.getElementById('package-count');
-const packageFill = document.getElementById('package-fill');
-const packageFile = document.getElementById('package-file');
+// Packager elements
+const bpFolderInputBtn = document.getElementById('bp-folder-input-btn');
+const bpFolderPathSpan = document.getElementById('bp-folder-path');
+const rpFolderInputBtn = document.getElementById('rp-folder-input-btn');
+const rpFolderPathSpan = document.getElementById('rp-folder-path');
+const obfuscatePackagedCodeCheckbox = document.getElementById('obfuscatePackagedCode');
+const packageAddonBtn = document.getElementById('package-addon-btn');
+const backToMainPackager = document.getElementById('back-to-main-packager');
 
-// Modals
-const successModal = document.getElementById('success-modal');
-const errorModal = document.getElementById('error-modal');
-const successMessage = document.getElementById('success-message');
-const errorMessage = document.getElementById('error-message');
-const modalCloseButtons = document.querySelectorAll('.modal-close, .modal-ok');
-const statusText = document.getElementById('status-text');
-checkUpdatesBtn.addEventListener('click', async () => {
-    // Disable the button and change its text to indicate checking
-    checkUpdatesBtn.disabled = true;
-    checkUpdatesBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-    updateStatus('Checking for updates...'); // Update status bar text
+// Credits elements
+const backToMainCredits = document.getElementById('back-to-main-credits');
+const appVersionSpan = document.getElementById('app-version');
 
-    try {
-        // Call the checkForUpdates function in main.js
-        const result = await window.electron.checkForUpdates();
+// --- Debugging: Log elements to console on load ---
+console.log('Renderer script loaded.');
+console.log('mainMenu:', mainMenu);
+console.log('obfuscatorBtn:', obfuscatorBtn);
+console.log('packagerBtn:', packagerBtn);
+console.log('creditsBtn:', creditsBtn);
+console.log('updaterBtn:', updaterBtn);
+console.log('obfuscatorSection:', obfuscatorSection);
+console.log('packagerSection:', packagerSection);
+console.log('creditsSection:', creditsSection);
+console.log('appVersionSpan:', appVersionSpan);
 
-        if (result.updateAvailable) {
-            showSuccess(`Update available: v${result.version}`);
-            // Here, you might want to show a dialog to the user
-            // asking if they want to download and install the update
-        } else {
-            showSuccess('You have the latest version');
-        }
-    } catch (error) {
-        showError(error.message);
-    } finally {
-        // Re-enable the button and reset its text
-        checkUpdatesBtn.disabled = false;
-        checkUpdatesBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Check Updates';
-        updateStatus('Ready'); // Reset status bar text
-    }
+
+/**
+ * Hides all main sections and displays the specified section.
+ * @param {HTMLElement} sectionToShow - The section element to display.
+ */
+function showSection(sectionToShow) {
+    mainMenu.classList.add('hidden');
+    obfuscatorSection.classList.add('hidden');
+    packagerSection.classList.add('hidden');
+    creditsSection.classList.add('hidden');
+
+    sectionToShow.classList.remove('hidden');
+}
+
+/**
+ * Hides all sections and displays the main menu.
+ */
+function showMainMenu() {
+    mainMenu.classList.remove('hidden');
+    obfuscatorSection.classList.add('hidden');
+    packagerSection.classList.add('hidden');
+    creditsSection.classList.add('hidden');
+}
+
+// Set initial values for obfuscator options based on common defaults or provided bot.js logic
+compactCodeCheckbox.checked = true;
+controlFlowFlatteningCheckbox.checked = false;
+deadCodeInjectionCheckbox.checked = false;
+debugProtectionCheckbox.checked = false;
+disableConsoleOutputCheckbox.checked = true;
+stringArrayCheckbox.checked = true;
+stringArrayShuffleCheckbox.checked = true;
+stringArrayThresholdValueInput.value = 0.5;
+
+// Enable/disable the stringArrayThresholdValueInput based on the stringArrayCheckbox state
+stringArrayCheckbox.addEventListener('change', () => {
+    stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
+});
+// Set initial disabled state on load
+stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
+
+
+// --- Event Listeners for Main Menu Buttons ---
+
+// Obfuscator button click handler
+obfuscatorBtn.addEventListener('click', () => showSection(obfuscatorSection));
+
+// Packager button click handler
+packagerBtn.addEventListener('click', () => showSection(packagerSection));
+
+// Credits button click handler: fetches and displays app version
+creditsBtn.addEventListener('click', async () => {
+    const version = await window.electronAPI.getAppVersion();
+    appVersionSpan.textContent = version;
+    showSection(creditsSection);
 });
 
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-    // Set initial status
-    updateStatus('Ready');
-});
-
-// Navigation functionality
-navButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const sectionId = button.getAttribute('data-section');
-        
-        // Update active button
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        
-        // Show corresponding section
-        contentSections.forEach(section => {
-            section.classList.remove('active');
-            if (section.id === sectionId) {
-                section.classList.add('active');
-            }
-        });
+// Updater button click handler: triggers update check
+updaterBtn.addEventListener('click', async () => {
+    // Trigger the update check via IPC. The main process will handle dialogs.
+    await window.electronAPI.checkForUpdates();
+    // Provide immediate feedback to the user that the check is in progress
+    await window.electronAPI.showMessageBox({
+        type: 'info',
+        title: 'Checking for Updates...',
+        message: 'Checking for new releases. You will be notified if an update is available.'
     });
 });
 
 
+// --- Event Listeners for Back Buttons in sections ---
+backToMainObfuscator.addEventListener('click', showMainMenu);
+backToMainPackager.addEventListener('click', showMainMenu);
+backToMainCredits.addEventListener('click', showMainMenu);
 
-// Quick action cards (on dashboard)
-quickActionCards.forEach(card => {
-    card.addEventListener('click', () => {
-        const sectionId = card.getAttribute('data-section');
-        
-        // Find and click the corresponding nav button
-        navButtons.forEach(button => {
-            if (button.getAttribute('data-section') === sectionId) {
-                button.click();
-            }
+// --- Obfuscator Logic ---
+
+// Event listener for selecting the input script folder for obfuscation
+obfuscatorInputFolderBtn.addEventListener('click', async () => {
+    const folderPath = await window.electronAPI.selectFolder();
+    if (folderPath) {
+        obfuscatorInputFolderPathSpan.textContent = folderPath;
+    }
+});
+
+// Event listener for selecting the output folder for obfuscated scripts
+obfuscatorOutputFolderBtn.addEventListener('click', async () => {
+    const folderPath = await window.electronAPI.selectFolder();
+    if (folderPath) {
+        obfuscatorOutputFolderPathSpan.textContent = folderPath;
+    }
+});
+
+// Event listener for the "Obfuscate Code" button
+obfuscateCodeBtn.addEventListener('click', async () => {
+    const inputFolderPath = obfuscatorInputFolderPathSpan.textContent;
+    const outputFolderPath = obfuscatorOutputFolderPathSpan.textContent;
+
+    // Validate that both input and output folders are selected
+    if (!inputFolderPath || inputFolderPath === 'No folder selected.') {
+        await window.electronAPI.showMessageBox({
+            type: 'warning',
+            title: 'Input Folder Required',
+            message: 'Please select an input folder containing your JavaScript files.'
         });
-    });
-});
-
-// File selection handlers
-selectInputBtn.addEventListener('click', async () => {
-    const path = await window.electron.selectFolder();
-    if (path) {
-        inputPath.value = path;
+        return;
     }
-});
-
-selectOutputBtn.addEventListener('click', async () => {
-    const path = await window.electron.selectFolder();
-    if (path) {
-        outputPath.value = path;
-    }
-});
-
-selectBpBtn.addEventListener('click', async () => {
-    const path = await window.electron.selectPackFolder();
-    if (path) {
-        bpPath.value = path;
-    }
-});
-
-selectRpBtn.addEventListener('click', async () => {
-    const path = await window.electron.selectPackFolder();
-    if (path) {
-        rpPath.value = path;
-    }
-});
-
-// Obfuscation form submission
-obfuscateBtn.addEventListener('click', async () => {
-    if (!inputPath.value || !outputPath.value) {
-        showError('Please select both input and output folders');
+    if (!outputFolderPath || outputFolderPath === 'No folder selected.') {
+        await window.electronAPI.showMessageBox({
+            type: 'warning',
+            title: 'Output Folder Required',
+            message: 'Please select an output folder for the obfuscated files.'
+        });
         return;
     }
 
-    // Get obfuscation options from checkboxes
+    // Inform the user that obfuscation is in progress
+    await window.electronAPI.showMessageBox({
+        type: 'info',
+        title: 'Obfuscation in Progress',
+        message: 'Processing your JavaScript files. This might take a moment...'
+    });
+
+    // Gather all obfuscation options from the checkboxes and input field
     const obfuscationOptions = {
-        enabled: document.getElementById('enable-obfuscation').checked,
-        compact: document.getElementById('compact-code').checked,
-        stringArray: document.getElementById('string-array').checked,
-        deadCodeInjection: document.getElementById('dead-code-injection').checked,
-        controlFlowFlattening: document.getElementById('control-flow').checked,
-        debugProtection: document.getElementById('debug-protection').checked,
-        disableConsoleOutput: document.getElementById('disable-console').checked
+        compactCode: compactCodeCheckbox.checked,
+        controlFlowFlattening: controlFlowFlatteningCheckbox.checked,
+        deadCodeInjection: deadCodeInjectionCheckbox.checked,
+        debugProtection: debugProtectionCheckbox.checked,
+        disableConsoleOutput: disableConsoleOutputCheckbox.checked,
+        stringArray: stringArrayCheckbox.checked,
+        stringArrayShuffle: stringArrayShuffleCheckbox.checked,
+        stringArrayThreshold: parseFloat(stringArrayThresholdValueInput.value) // Ensure it's a number
     };
 
-    const removeComments = document.getElementById('remove-comments').checked;
+    // Call the main process to perform the obfuscation
+    const result = await window.electronAPI.obfuscateCode({
+        inputFolderPath,
+        outputFolderPath,
+        options: obfuscationOptions
+    });
 
-    // Show progress bar
-    obfuscationProgress.style.display = 'block';
-    progressFill.style.width = '0%';
-    progressCount.textContent = '0 / 0';
-    currentFile.textContent = '';
-    updateStatus('Obfuscating scripts...');
-
-    // Disable button during processing
-    obfuscateBtn.disabled = true;
-    obfuscateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-    try {
-        const result = await window.electron.obfuscateScripts({
-            inputPath: inputPath.value,
-            outputPath: outputPath.value,
-            obfuscationOptions,
-            removeComments
+    // Display the result of the obfuscation
+    if (result.success) {
+        obfuscatorOutput.value = result.message || 'Obfuscation complete. Check your output folder.';
+        await window.electronAPI.showMessageBox({
+            type: 'info',
+            title: 'Obfuscation Complete',
+            message: result.message || 'JavaScript files obfuscated successfully!'
         });
-
-        if (result.success) {
-            showSuccess(`Successfully obfuscated ${result.processedFiles} files`);
-        } else {
-            showError(result.message);
-        }
-    } catch (error) {
-        showError(error.message);
-    } finally {
-        obfuscateBtn.disabled = false;
-        obfuscateBtn.innerHTML = '<i class="fas fa-lock"></i> Start Obfuscation';
-        updateStatus('Ready');
+    } else {
+        obfuscatorOutput.value = `Error: ${result.error}`;
+        await window.electronAPI.showMessageBox({
+            type: 'error',
+            title: 'Obfuscation Error',
+            message: `Failed to obfuscate files: ${result.error}`
+        });
     }
 });
 
-// Package form submission
-packageBtn.addEventListener('click', async () => {
-    if (!bpPath.value) {
-        showError('Please select at least a behavior pack folder');
+// --- Add-on Packager Logic ---
+
+// Event listener for selecting the Behavior Pack folder
+bpFolderInputBtn.addEventListener('click', async () => {
+    const folderPath = await window.electronAPI.selectFolder();
+    if (folderPath) {
+        bpFolderPathSpan.textContent = folderPath;
+    }
+});
+
+// Event listener for selecting the Resource Pack folder
+rpFolderInputBtn.addEventListener('click', async () => {
+    const folderPath = await window.electronAPI.selectFolder();
+    if (folderPath) {
+        rpFolderPathSpan.textContent = folderPath;
+    }
+});
+
+// Event listener for the "Package Add-on" button
+packageAddonBtn.addEventListener('click', async () => {
+    const bpFolderPath = bpFolderPathSpan.textContent;
+    const rpFolderPath = rpFolderPathSpan.textContent;
+    const obfuscatePackagedCode = obfuscatePackagedCodeCheckbox.checked;
+
+    // Validate that at least one pack folder is selected
+    if ((!bpFolderPath || bpFolderPath === 'No folder selected.') && (!rpFolderPath || rpFolderPath === 'No folder selected.')) {
+        await window.electronAPI.showMessageBox({
+            type: 'warning',
+            title: 'Folders Required',
+            message: 'Please select at least one pack folder (Behavior Pack or Resource Pack).'
+        });
         return;
     }
 
-    if (!packName.value || !packVersion.value) {
-        showError('Please enter a pack name and version');
-        return;
-    }
+    // Inform the user that packaging is in progress
+    await window.electronAPI.showMessageBox({
+        type: 'info',
+        title: 'Packaging Add-on',
+        message: 'Packaging your add-on. This might take a moment...'
+    });
 
-    const packPaths = [bpPath.value];
-    if (rpPath.value) {
-        packPaths.push(rpPath.value);
-    }
+    // Gather obfuscation options to pass to the main process if obfuscation is requested
+    const obfuscationOptions = {
+        compactCode: compactCodeCheckbox.checked,
+        controlFlowFlattening: controlFlowFlatteningCheckbox.checked,
+        deadCodeInjection: deadCodeInjectionCheckbox.checked,
+        debugProtection: debugProtectionCheckbox.checked,
+        disableConsoleOutput: disableConsoleOutputCheckbox.checked,
+        stringArray: stringArrayCheckbox.checked,
+        stringArrayShuffle: stringArrayShuffleCheckbox.checked,
+        stringArrayThreshold: parseFloat(stringArrayThresholdValueInput.value)
+    };
 
-    // Show progress bar
-    packageProgress.style.display = 'block';
-    packageFill.style.width = '0%';
-    packageCount.textContent = '0 files';
-    packageFile.textContent = '';
-    updateStatus('Creating .mcaddon file...');
+    // Call the main process to package the add-on
+    const result = await window.electronAPI.packageAddon({
+        bpFolderPath: bpFolderPath === 'No folder selected.' ? null : bpFolderPath, // Pass null if not selected
+        rpFolderPath: rpFolderPath === 'No folder selected.' ? null : rpFolderPath, // Pass null if not selected
+        obfuscatePackagedCode,
+        obfuscationOptions
+    });
 
-    // Disable button during processing
-    packageBtn.disabled = true;
-    packageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Packaging...';
-
-    try {
-        const result = await window.electron.createMcaddon({
-            packPaths,
-            outputPath: path.join(__dirname, 'package_dist'),
-            packName: packName.value,
-            version: packVersion.value,
-            isBeta: isBeta.checked
+    // Display the result of the packaging
+    if (result.success) {
+        await window.electronAPI.showMessageBox({
+            type: 'info',
+            title: 'Packaging Complete',
+            message: result.message
         });
-
-        if (result.success) {
-            showSuccess(result.message);
-        } else {
-            showError(result.message);
-        }
-    } catch (error) {
-        showError(error.message);
-    } finally {
-        packageBtn.disabled = false;
-        packageBtn.innerHTML = '<i class="fas fa-box"></i> Create .mcaddon';
-        updateStatus('Ready');
+    } else {
+        await window.electronAPI.showMessageBox({
+            type: 'error',
+            title: 'Packaging Error',
+            message: `Failed to package add-on: ${result.error}`
+        });
     }
 });
 
-// Progress updates from main process
-window.electron.onProgressUpdate(({ current, total, fileName }) => {
-    const percent = Math.round((current / total) * 100);
-    progressFill.style.width = `${percent}%`;
-    progressCount.textContent = `${current} / ${total}`;
-    currentFile.textContent = fileName;
+// --- Electron-Updater Renderer-side Event Listeners ---
+
+// Listen for 'update_available' event from the main process
+window.electronAPI.on('update_available', () => {
+    console.log('Update available, download started...');
+    // You could update a UI element here, e.g., show a "Downloading Update..." message
 });
 
-window.electron.onPackageProgress(({ fileCount, currentFile }) => {
-    packageFill.style.width = `${Math.min(100, fileCount / 10)}%`; // Simple progress indicator
-    packageCount.textContent = `${fileCount} files`;
-    packageFile.textContent = currentFile;
+// Listen for 'update_downloaded' event from the main process
+window.electronAPI.on('update_downloaded', async () => {
+    const response = await window.electronAPI.showMessageBox({
+        type: 'info',
+        title: 'Update Ready!',
+        message: 'A new version has been downloaded. Restart the application to apply the update.',
+        buttons: ['Restart Now', 'Later']
+    });
+
+    if (response.response === 0) { // 'Restart Now' button clicked
+        window.electronAPI.restartApp(); // Call the main process to quit and install
+    }
 });
 
-// Modal handling
-modalCloseButtons.forEach(button => {
-    button.addEventListener('click', (e) => {
-        e.stopPropagation();
-        successModal.style.display = 'none';
-        errorModal.style.display = 'none';
+// Listen for 'update_error' event from the main process
+window.electronAPI.on('update_error', (errorMessage) => {
+    console.error('Update error in renderer:', errorMessage);
+    // You could display this error message in a more user-friendly way in the UI
+    window.electronAPI.showMessageBox({
+        type: 'error',
+        title: 'Update Error',
+        message: `An error occurred during update: ${errorMessage}`
     });
 });
 
-// Also add click event to close modals when clicking outside the content
-[successModal, errorModal].forEach(modal => {
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-});
-// Helper functions
-function showSuccess(message) {
-    successMessage.textContent = message;
-    successModal.style.display = 'flex';
-}
-
-function showError(message) {
-    errorMessage.textContent = message;
-    errorModal.style.display = 'flex';
-}
-
-function updateStatus(message) {
-    statusText.textContent = message;
-}
-
-ipcMain.handle('check-for-updates', async () => {
+// Function to fetch and display the app version from package.json
+async function displayAppVersion() {
     try {
-        const result = await updateChecker.checkForUpdates();
-        return result; // Send the update check result back to the renderer
+        const version = await window.electronAPI.getAppVersion();
+        const appVersionSpan = document.getElementById('app-version');
+        if (appVersionSpan) {
+            appVersionSpan.textContent = version;
+        }
     } catch (error) {
-        return { error: true, message: error.message };
+        console.error('Failed to get app version:', error);
+        // Optionally display an error message in the UI
     }
+}
+
+// Call displayAppVersion when the credits section is shown
+creditsBtn.addEventListener('click', async () => {
+    await displayAppVersion(); // Call the function here
+    showSection(creditsSection);
 });
 
-// Keep this at the bottom with other window.electron definitions
-window.electron = {
-    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
-    selectFolder: () => ipcRenderer.invoke('select-folder'),
-    selectPackFolder: () => ipcRenderer.invoke('select-pack-folder'),
-    obfuscateScripts: (options) => ipcRenderer.invoke('obfuscate-scripts', options),
-    createMcaddon: (options) => ipcRenderer.invoke('create-mcaddon', options),
-    onProgressUpdate: (callback) => ipcRenderer.on('progress-update', (event, data) => callback(data)),
-    onPackageProgress: (callback) => ipcRenderer.on('package-progress', (event, data) => callback(data))
-};
+// Also call it on startup, after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', displayAppVersion);

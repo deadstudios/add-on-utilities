@@ -1,49 +1,58 @@
 {
   "name": "deads-addon-utilities",
   "version": "1.0.0",
-  "description": "Minecraft Bedrock Add-on Utilities",
+  "description": "A utility for managing and packaging Minecraft add-ons.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder",
-    "dist": "electron-builder --publish=never"
+    "package-win": "electron-builder --win",
+    "package-mac": "electron-builder --mac",
+    "package-linux": "electron-builder --linux",
+    "build": "electron-builder build --win"
   },
-  "keywords": ["minecraft", "bedrock", "utilities", "scripts"],
   "author": "Dead Studios",
   "license": "MIT",
-  "devDependencies": {
-    "electron": "^27.0.0",
-    "electron-builder": "^24.6.4"
-  },
   "dependencies": {
-    "javascript-obfuscator": "^4.0.2",
-    "archiver": "^6.0.1",
-    "yauzl": "^2.10.0"
+    "electron-updater": "^6.1.1"
+  },
+  "devDependencies": {
+    "electron": "^28.2.3",
+    "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.deadstudios.utilities",
+    "appId": "com.deadstudios.addonutils",
     "productName": "Dead's Add-on Utilities",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "main.js",
-      "renderer.js",
-      "styles.css",
-      "index.html",
-      "node_modules/**/*"
-    ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "./build/icon.ico"
+    },
+    "nsis": {
+      "installerIcon": "./build/icon.ico",
+      "uninstallerIcon": "./build/icon.ico",
+      "uninstallDisplayName": "Dead's Add-on Utilities",
+      "oneClick": false,
+      "allowToChangeInstallationType": true,
+      "perMachine": false
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/icon.icns"
+      "icon": "./build/icon.icns"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "assets/icon.png"
-    }
+      "target": [
+        "deb",
+        "rpm",
+        "tar.gz"
+      ],
+      "icon": "./build/icon.png"
+    },
+    "files": [
+      "index.html",
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "styles.css",
+      "node_modules/**/*"
+    ]
   }
 }
