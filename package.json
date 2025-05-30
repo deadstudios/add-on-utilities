@@ -1,6 +1,6 @@
 {
   "name": "deads-addon-utilities",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A utility for managing and packaging Minecraft add-ons.",
   "main": "main.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "electron": "^28.2.3",
     "electron-builder": "^24.13.3"
   },
-  
+
   "build": {
     "appId": "com.deadstudios.addonutils",
     "productName": "dead.s.add-on.utilities",
