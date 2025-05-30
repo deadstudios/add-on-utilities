@@ -26,7 +26,6 @@ const unlinkAsync = promisify(fs.unlink); // For deleting temporary files
 let mainWindow; // Declare mainWindow globally so it can be accessed by autoUpdater events
 
 // Set the application user model ID for Windows (important for taskbar icon)
-// Replace 'your.app.id' with a unique identifier for your application.
 // This should be set before the app is ready.
 if (process.platform === 'win32') {
     app.setAppUserModelId(app.getName());
@@ -105,10 +104,6 @@ function minifyJson(jsonString) {
  * @param {string} outputPath - Path to save the optimized image file.
  */
 async function optimizeImage(inputPath, outputPath) {
-    // In a real scenario, you'd use a library here, e.g.:
-    // const sharp = require('sharp');
-    // await sharp(inputPath).toFile(outputPath);
-    // For now, we'll just copy it.
     await copyFileAsync(inputPath, outputPath);
     console.log(`Image copied (optimization skipped): ${inputPath} to ${outputPath}`);
 }
@@ -302,9 +297,6 @@ ipcMain.handle('move-file', async (event, sourcePath, destinationPath) => {
 ipcMain.handle('obfuscate-code', async (event, data) => {
     try {
         const { inputPath, outputPath, options } = data;
-        // For direct obfuscation, `removeComments` is implicitly handled by `compactCode`
-        // or can be added as an explicit option if needed for this specific handler.
-        // For now, we'll assume the `removeComments` flag is only relevant for packaging.
         await processDirectory(inputPath, outputPath, {
             obfuscationOptions: options,
             removeComments: false, // Not exposed in obfuscator tab directly for now
@@ -359,7 +351,6 @@ ipcMain.handle('show-message-box', async (event, options) => {
 ipcMain.handle('check-for-updates', async () => {
     console.log('Manual update check triggered by renderer.');
     // Always check for updates regardless of NODE_ENV for testing/debugging purposes.
-    // In a production app, you might re-enable the 'production' check.
     autoUpdater.checkForUpdates(); 
     return { message: 'Checking for updates...' }; // Return immediate feedback
 });

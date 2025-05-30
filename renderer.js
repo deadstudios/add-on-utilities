@@ -533,8 +533,6 @@ if (isElectron) {
         console.log(`Download progress: ${percent}%`);
         if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
         if (updateProgressPercent) updateProgressPercent.textContent = `${Math.floor(percent)}%`;
-        // You can add logic here to estimate remaining time if you have total size and downloaded size
-        // For simplicity, we'll just show "Downloading..."
         if (updateEstimatedTime) updateEstimatedTime.textContent = 'Downloading...';
     });
 
@@ -566,8 +564,6 @@ if (isElectron) {
     window.electronAPI.on('update-changelog', (changelog) => {
         console.log('Changelog received:', changelog);
         if (updateChangelog) {
-            // Use marked.js to convert Markdown to HTML and display it
-            // Ensure marked.js is loaded in your HTML before this script.
             updateChangelog.innerHTML = marked.parse(changelog);
         }
     });
@@ -596,18 +592,14 @@ async function displayAppVersion() {
         }
     } catch (error) {
         console.error('Failed to get app version:', error);
-        // Optionally display an error message in the UI
     }
 }
 
-// Placeholder functions for showUpdateSection and hideUpdateSection
-// These functions are called by the Electron update listeners, but need to exist
-// even if Electron API is not present, to prevent errors in a browser environment.
+
 function showUpdateSection() {
     if (updateInfoSection) {
         updateInfoSection.classList.remove('hidden');
     }
-    // You might want to hide other sections here too, similar to showSection
     if (mainMenu) mainMenu.classList.add('hidden');
     if (obfuscatorSection) obfuscatorSection.classList.add('hidden');
     if (packagerSection) packagerSection.classList.add('hidden');
@@ -620,8 +612,6 @@ function hideUpdateSection() {
     if (updateInfoSection) {
         updateInfoSection.classList.add('hidden');
     }
-    // This function typically returns to the main menu or a previous state
-    // For now, it just hides the update section.
-    // Consider calling showMainMenu() here if that's the desired behavior after hiding update.
+
     showMainMenu();
 }
