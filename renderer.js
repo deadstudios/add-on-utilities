@@ -1,12 +1,21 @@
-// renderer.js (Electron Renderer Process)
+// renderer.js (Electron Renderer Process - Updated for browser compatibility)
 // This script interacts with the DOM and communicates with the main process.
+// Modifications have been made to gracefully handle environments where 'electronAPI' is not available.
+
+// --- Global Check for Electron API ---
+// This function will be used to guard Electron-specific API calls.
+const isElectron = typeof window.electronAPI !== 'undefined';
+
+if (!isElectron) {
+    console.warn("Warning: 'electronAPI' is not available. Functionality dependent on Electron's IPC will not work.");
+}
 
 // Get references to main menu buttons and sections
 const mainMenu = document.getElementById('main-menu');
 const obfuscatorBtn = document.getElementById('obfuscator-btn');
 const packagerBtn = document.getElementById('packager-btn');
 const creditsBtn = document.getElementById('credits-btn');
-const updaterBtn = document.getElementById('updater-btn');
+const updaterBtn = document.getElementById('updater-btn'); // This is the 'Check Updates' button
 
 const obfuscatorSection = document.getElementById('obfuscator-section');
 const packagerSection = document.getElementById('packager-section');
@@ -54,6 +63,17 @@ const backToMainPackager = document.getElementById('back-to-main-packager');
 const backToMainCredits = document.getElementById('back-to-main-credits');
 const appVersionSpan = document.getElementById('app-version');
 
+// --- New Update Section Elements ---
+const updateInfoSection = document.getElementById('update-info-section');
+const updateChangelog = document.getElementById('update-changelog');
+const updateProgressBar = document.getElementById('update-progress-bar');
+const updateProgressPercent = document.getElementById('update-progress-percent');
+const updateEstimatedTime = document.getElementById('update-estimated-time');
+const updateRestartBtn = document.getElementById('update-restart-btn');
+const updateErrorMessage = document.getElementById('update-error-message');
+const hideUpdateSectionBtn = document.getElementById('hide-update-section-btn');
+
+
 // --- Debugging: Log elements to console on load ---
 console.log('Renderer script loaded.');
 console.log('mainMenu:', mainMenu);
@@ -73,6 +93,14 @@ console.log('packNameInput:', packNameInput); // Log new input
 console.log('removeCommentsPackagedCodeCheckbox:', removeCommentsPackagedCodeCheckbox); // Log new checkbox
 console.log('minifyJsonFilesCheckbox:', minifyJsonFilesCheckbox); // Log new checkbox
 console.log('compressImagesCheckbox:', compressImagesCheckbox); // Log new checkbox
+console.log('updateInfoSection:', updateInfoSection);
+console.log('updateChangelog:', updateChangelog);
+console.log('updateProgressBar:', updateProgressBar);
+console.log('updateProgressPercent:', updateProgressPercent);
+console.log('updateEstimatedTime:', updateEstimatedTime);
+console.log('updateRestartBtn:', updateRestartBtn);
+console.log('updateErrorMessage:', updateErrorMessage);
+console.log('hideUpdateSectionBtn:', hideUpdateSectionBtn);
 
 
 /**
@@ -207,6 +235,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Event listener for the "Close" button in the update section
+    if (hideUpdateSectionBtn) {
+        hideUpdateSectionBtn.addEventListener('click', () => {
+            hideUpdateSection();
+            showMainMenu(); // Return to main menu after closing update section
+        });
+    }
 });
 
 
@@ -233,8 +269,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Updater button click handler: triggers update check
     if (updaterBtn) {
         updaterBtn.addEventListener('click', async () => {
+            // Show the update info section immediately
+            showUpdateSection();
             // Trigger the update check via IPC. The main process will handle dialogs.
-            await window.electronAPI.checkForUpdates();
+            if (isElectron) {
+                await window.electronAPI.checkForUpdates();
+            } else {
+                console.warn("Electron API not available for checkForUpdates.");
+            }
             // Provide immediate feedback to the user that the check is in progress
             showNotification('Checking for new releases. You will be notified if an update is available.', 'info');
         });
@@ -256,7 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for selecting the input script folder for obfuscation
     if (obfuscatorInputFolderBtn) {
         obfuscatorInputFolderBtn.addEventListener('click', async () => {
-            const folderPath = await window.electronAPI.selectFolder();
+            let folderPath = 'No folder selected.'; // Default for browser environment
+            if (isElectron) {
+                folderPath = await window.electronAPI.selectFolder();
+            } else {
+                console.warn("Electron API not available for selectFolder.");
+            }
+            
             if (folderPath && obfuscatorInputFolderPathSpan) {
                 obfuscatorInputFolderPathSpan.textContent = folderPath;
             }
@@ -266,7 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for selecting the output folder for obfuscated scripts
     if (obfuscatorOutputFolderBtn) {
         obfuscatorOutputFolderBtn.addEventListener('click', async () => {
-            const folderPath = await window.electronAPI.selectFolder();
+            let folderPath = 'No folder selected.'; // Default for browser environment
+            if (isElectron) {
+                folderPath = await window.electronAPI.selectFolder();
+            } else {
+                console.warn("Electron API not available for selectFolder.");
+            }
+
             if (folderPath && obfuscatorOutputFolderPathSpan) {
                 obfuscatorOutputFolderPathSpan.textContent = folderPath;
             }
@@ -304,12 +358,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 stringArrayThreshold: stringArrayThresholdValueInput ? parseFloat(stringArrayThresholdValueInput.value) : 0.5 // Ensure it's a number
             };
 
+            let result = { success: false, error: "Electron API not available for obfuscation." };
             // Call the main process to perform the obfuscation
-            const result = await window.electronAPI.obfuscateCode({
-                inputPath: inputFolderPath, // Changed to inputPath
-                outputPath: outputFolderPath, // Changed to outputPath
-                options: obfuscationOptions // Changed to options
-            });
+            if (isElectron) {
+                result = await window.electronAPI.obfuscateCode({
+                    inputPath: inputFolderPath, // Changed to inputPath
+                    outputPath: outputFolderPath, // Changed to outputPath
+                    options: obfuscationOptions // Changed to options
+                });
+            } else {
+                console.warn("Electron API not available for obfuscateCode.");
+            }
 
             // Display the result of the obfuscation
             if (result.success) {
@@ -325,7 +384,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listener for selecting the Behavior Pack folder
     if (bpFolderInputBtn) {
         bpFolderInputBtn.addEventListener('click', async () => {
-            const folderPath = await window.electronAPI.selectFolder(); // No initial path for BP
+            let folderPath = 'No folder selected.'; // Default for browser environment
+            if (isElectron) {
+                folderPath = await window.electronAPI.selectFolder(); // No initial path for BP
+            } else {
+                console.warn("Electron API not available for selectFolder.");
+            }
             if (folderPath && bpFolderPathSpan) {
                 bpFolderPathSpan.textContent = folderPath;
             }
@@ -338,7 +402,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const bpPath = bpFolderPathSpan ? bpFolderPathSpan.textContent : '';
             // Use the BP path as the initial path for RP if it's selected
             const initialPath = (bpPath && bpPath !== 'No folder selected.') ? bpPath : null;
-            const folderPath = await window.electronAPI.selectFolder(initialPath);
+            
+            let folderPath = 'No folder selected.'; // Default for browser environment
+            if (isElectron) {
+                folderPath = await window.electronAPI.selectFolder(initialPath);
+            } else {
+                console.warn("Electron API not available for selectFolder.");
+            }
+
             if (folderPath && rpFolderPathSpan) {
                 rpFolderPathSpan.textContent = folderPath;
             }
@@ -384,33 +455,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 stringArrayThreshold: stringArrayThresholdValueInput ? parseFloat(stringArrayThresholdValueInput.value) : 0.5
             };
 
+            let result = { success: false, error: "Electron API not available for packaging." };
             // Call the main process to package the add-on
-            const result = await window.electronAPI.packageAddon({
-                behaviorPackPath: bpFolderPath === 'No folder selected.' ? null : bpFolderPath, // Pass null if not selected
-                resourcePackPath: rpFolderPath === 'No folder selected.' ? null : rpFolderPath, // Pass null if not selected
-                packName, // Pass the pack name
-                obfuscationOptions, // Pass obfuscation options
-                removeCommentsPackagedCode, // Pass new option
-                minifyJsonFiles, // Pass new option
-                compressImages // Pass new option
-            });
+            if (isElectron) {
+                result = await window.electronAPI.packageAddon({
+                    behaviorPackPath: bpFolderPath === 'No folder selected.' ? null : bpFolderPath, // Pass null if not selected
+                    resourcePackPath: rpFolderPath === 'No folder selected.' ? null : rpFolderPath, // Pass null if not selected
+                    packName, // Pass the pack name
+                    obfuscationOptions, // Pass obfuscation options
+                    removeCommentsPackagedCode, // Pass new option
+                    minifyJsonFiles, // Pass new option
+                    compressImages // Pass new option
+                });
+            } else {
+                console.warn("Electron API not available for packageAddon.");
+            }
 
             // Display the result of the packaging
             if (result.success) {
                 showNotification(result.message, 'success');
                 // Open save dialog after successful packaging
                 const defaultFileName = `${packName.replace(/[^a-z0-9_.-]/gi, '_')}.mcaddon`; // Use sanitized pack name
-                const savePath = await window.electronAPI.showSaveDialog(defaultFileName);
+                
+                let savePath = null;
+                if (isElectron) {
+                    savePath = await window.electronAPI.showSaveDialog(defaultFileName);
+                } else {
+                    console.warn("Electron API not available for showSaveDialog.");
+                }
 
                 if (savePath) {
-                    const moveResult = await window.electronAPI.moveFile(result.filePath, savePath);
+                    let moveResult = { success: false, error: "Electron API not available for file movement." };
+                    if (isElectron) {
+                        moveResult = await window.electronAPI.moveFile(result.filePath, savePath);
+                    } else {
+                        console.warn("Electron API not available for moveFile.");
+                    }
+
                     if (moveResult.success) {
                         showNotification('Add-on saved successfully!', 'success');
                     } else {
                         showNotification(`Failed to save add-on: ${moveResult.error}`, 'error');
                     }
                 } else {
-                    showNotification('Add-on packaged but not saved (save dialog cancelled).', 'warning');
+                    showNotification('Add-on packaged but not saved (save dialog cancelled or Electron API not available).', 'warning');
                 }
 
             } else {
@@ -425,38 +513,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // --- Electron-Updater Renderer-side Event Listeners ---
-
-// Listen for 'update_available' event from the main process
-window.electronAPI.on('update_available', () => {
-    console.log('Update available, download started...');
-    // You could update a UI element here, e.g., show a "Downloading Update..." message
-});
-
-// Listen for 'update_downloaded' event from the main process
-window.electronAPI.on('update_downloaded', async () => {
-    const response = await window.electronAPI.showMessageBox({
-        type: 'info',
-        title: 'Update Ready!',
-        message: 'A new version has been downloaded. Restart the application to apply the update.',
-        buttons: ['Restart Now', 'Later']
+// These listeners are only attached if running in an Electron environment.
+if (isElectron) {
+    // Listen for 'update_available' event from the main process
+    window.electronAPI.on('update_available', () => {
+        console.log('Update available, download started...');
+        // Show the update section
+        showUpdateSection();
+        // Reset progress bar and text
+        if (updateProgressBar) updateProgressBar.style.width = '0%';
+        if (updateProgressPercent) updateProgressPercent.textContent = '0%';
+        if (updateEstimatedTime) updateEstimatedTime.textContent = 'Downloading...';
+        if (updateRestartBtn) updateRestartBtn.classList.add('hidden');
+        if (updateErrorMessage) updateErrorMessage.classList.add('hidden');
     });
 
-    if (response.response === 0) { // 'Restart Now' button clicked
-        window.electronAPI.restartApp(); // Call the main process to quit and install
-    }
-});
+    // Listen for 'download-progress' event from the main process
+    window.electronAPI.on('download-progress', (percent) => {
+        console.log(`Download progress: ${percent}%`);
+        if (updateProgressBar) updateProgressBar.style.width = `${percent}%`;
+        if (updateProgressPercent) updateProgressPercent.textContent = `${Math.floor(percent)}%`;
+        // You can add logic here to estimate remaining time if you have total size and downloaded size
+        // For simplicity, we'll just show "Downloading..."
+        if (updateEstimatedTime) updateEstimatedTime.textContent = 'Downloading...';
+    });
 
-// Listen for 'update_error' event from the main process
-window.electronAPI.on('update_error', (errorMessage) => {
-    console.error('Update error in renderer:', errorMessage);
-    // You could display this error message in a more user-friendly way in the UI
-    showNotification(`An error occurred during update: ${errorMessage}`, 'error');
-});
+    // Listen for 'update_downloaded' event from the main process
+    window.electronAPI.on('update_downloaded', async () => {
+        console.log('Update downloaded');
+        if (updateEstimatedTime) updateEstimatedTime.textContent = 'Download complete. Ready to install.';
+        if (updateRestartBtn) updateRestartBtn.classList.remove('hidden');
+        // Optionally, you can hide the progress bar after download is complete
+        if (updateProgressBar) updateProgressBar.style.width = '100%';
+        if (updateProgressPercent) updateProgressPercent.textContent = '100%';
+        
+        // Show a notification that the update is ready
+        showNotification('A new version has been downloaded. Restart the application to apply the update.', 'info');
+    });
+
+    // Listen for 'update_error' event from the main process
+    window.electronAPI.on('update_error', (errorMessage) => {
+        console.error('Update error in renderer:', errorMessage);
+        if (updateErrorMessage) {
+            updateErrorMessage.textContent = `An error occurred during update: ${errorMessage}`;
+            updateErrorMessage.classList.remove('hidden');
+        }
+        if (updateEstimatedTime) updateEstimatedTime.textContent = 'Update failed.';
+        showNotification(`An error occurred during update: ${errorMessage}`, 'error');
+    });
+
+    // Listen for 'update-changelog' event from the main process
+    window.electronAPI.on('update-changelog', (changelog) => {
+        console.log('Changelog received:', changelog);
+        if (updateChangelog) {
+            // Use marked.js to convert Markdown to HTML and display it
+            // Ensure marked.js is loaded in your HTML before this script.
+            updateChangelog.innerHTML = marked.parse(changelog);
+        }
+    });
+
+    // Listen for 'update-download-cancelled' event from the main process
+    window.electronAPI.on('update-download-cancelled', () => {
+        console.log('Update download cancelled by user.');
+        hideUpdateSection(); // Hide the update section if the user cancels
+        showNotification('Update download cancelled.', 'info');
+    });
+}
+
 
 // Function to fetch and display the app version from package.json
 async function displayAppVersion() {
     try {
-        const version = await window.electronAPI.getAppVersion();
+        let version = 'N/A'; // Default for browser environment
+        if (isElectron) {
+            version = await window.electronAPI.getAppVersion();
+        } else {
+            console.warn("Electron API not available for getAppVersion. Displaying 'N/A'.");
+        }
+        
         if (appVersionSpan) {
             appVersionSpan.textContent = version;
         }
@@ -464,4 +598,30 @@ async function displayAppVersion() {
         console.error('Failed to get app version:', error);
         // Optionally display an error message in the UI
     }
+}
+
+// Placeholder functions for showUpdateSection and hideUpdateSection
+// These functions are called by the Electron update listeners, but need to exist
+// even if Electron API is not present, to prevent errors in a browser environment.
+function showUpdateSection() {
+    if (updateInfoSection) {
+        updateInfoSection.classList.remove('hidden');
+    }
+    // You might want to hide other sections here too, similar to showSection
+    if (mainMenu) mainMenu.classList.add('hidden');
+    if (obfuscatorSection) obfuscatorSection.classList.add('hidden');
+    if (packagerSection) packagerSection.classList.add('hidden');
+    if (creditsSection) creditsSection.classList.add('hidden');
+    if (headerSection) headerSection.style.display = 'none';
+    body.style.overflowY = 'hidden';
+}
+
+function hideUpdateSection() {
+    if (updateInfoSection) {
+        updateInfoSection.classList.add('hidden');
+    }
+    // This function typically returns to the main menu or a previous state
+    // For now, it just hides the update section.
+    // Consider calling showMainMenu() here if that's the desired behavior after hiding update.
+    showMainMenu();
 }

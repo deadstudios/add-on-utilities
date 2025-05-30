@@ -24,25 +24,25 @@
   },
   "build": {
     "appId": "com.deadstudios.addonutils",
-    "productName": "Dead's Add-on Utilities",
+    "productName": "dead.s.add-on.utilities",
     "win": {
       "target": "nsis",
       "icon": "./build/icon.ico",
-      "artifactName": "${appName}-${version}-setup.${ext}"
+      "artifactName": "${productName}-${version}-setup.${ext}"
     },
     "nsis": {
       "installerIcon": "./build/icon.ico",
       "uninstallerIcon": "./build/icon.ico",
-      "uninstallDisplayName": "Dead's Add-on Utilities",
+      "uninstallDisplayName": "dead.s.add-on.utilities",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${appName}-${version}-setup.${ext}"
+      "artifactName": "${productName}-${version}-setup.${ext}"
     },
     "mac": {
       "target": "dmg",
       "icon": "./build/icon.icns",
-      "artifactName": "${appName}-${version}.${ext}"
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -51,7 +51,7 @@
         "tar.gz"
       ],
       "icon": "./build/icon.png",
-      "artifactName": "${appName}-${version}.${ext}"
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "files": [
       "index.html",

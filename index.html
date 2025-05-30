@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dead's Add-on Utilities</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
@@ -119,6 +120,49 @@
         @keyframes iconBounce {
             0%, 100% { transform: translateY(0px) scale(1); }
             50% { transform: translateY(-5px) scale(1.05); }
+        }
+
+        /* Markdown specific styling for the changelog */
+        #update-changelog h1, #update-changelog h2, #update-changelog h3, #update-changelog h4, #update-changelog h5, #update-changelog h6 {
+            font-weight: bold;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #E2E8F0; /* Light gray for headings */
+        }
+        #update-changelog h1 { font-size: 2.25rem; } /* text-4xl */
+        #update-changelog h2 { font-size: 1.875rem; } /* text-3xl */
+        #update-changelog h3 { font-size: 1.5rem; }    /* text-2xl */
+        #update-changelog h4 { font-size: 1.25rem; }   /* text-xl */
+        #update-changelog h5 { font-size: 1.125rem; }  /* text-lg */
+        #update-changelog h6 { font-size: 1rem; }      /* text-base */
+
+        #update-changelog p {
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+
+        #update-changelog ul {
+            list-style-type: disc;
+            margin-left: 1.25rem; /* Equivalent to pl-5 */
+            margin-bottom: 0.75rem;
+        }
+
+        #update-changelog ol {
+            list-style-type: decimal;
+            margin-left: 1.25rem; /* Equivalent to pl-5 */
+            margin-bottom: 0.75rem;
+        }
+
+        #update-changelog li {
+            margin-bottom: 0.25rem;
+        }
+
+        #update-changelog strong {
+            font-weight: bold;
+        }
+
+        #update-changelog em {
+            font-style: italic;
         }
     </style>
 </head>
@@ -345,6 +389,30 @@
 
     </div>
 
+    <div id="update-info-section" class="hidden fixed inset-0 w-full h-full bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-3xl md:w-3/4 lg:w-2/3 h-auto max-h-[calc(100vh-4rem)] flex flex-col">
+            <h2 class="text-2xl font-bold text-white mb-4 text-center">Update Information</h2>
+            <div id="update-changelog-container" class="mb-4 flex-grow overflow-y-auto">
+                <h3 class="text-lg font-semibold text-gray-300 mb-2">Changelog:</h3>
+                <div id="update-changelog" class="text-base text-gray-400 px-2 pb-2"></div>
+            </div>
+            <div id="update-progress-container" class="mb-4">
+                <p class="text-gray-300">Download Progress: <span id="update-progress-percent">0%</span></p>
+                <div class="w-full bg-gray-700 rounded-full h-2.5">
+                    <div id="update-progress-bar" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="update-estimated-time" class="text-sm text-gray-400 mt-2"></p>
+            </div>
+            <button id="update-restart-btn" class="hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="window.electronAPI.restartApp()">
+                Restart Now
+            </button>
+            <p id="update-error-message" class="text-red-500 mt-4 hidden"></p>
+            <button id="hide-update-section-btn" class="mt-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                Close
+            </button>
+        </div>
+    </div>
+
 <script>
     // Debugging: Check if electronAPI is available
     document.addEventListener('DOMContentLoaded', () => {
@@ -355,6 +423,34 @@
             console.error('electronAPI is not available');
         }
     });
+
+    /**
+     * Shows the update information section.
+     */
+    function showUpdateSection() {
+        const updateInfoSection = document.getElementById('update-info-section');
+        if (updateInfoSection) {
+            updateInfoSection.classList.remove('hidden');
+            // Hide main content to focus on update
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('header-section').style.display = 'none';
+            document.body.style.overflowY = 'hidden'; // Disable scrolling
+        }
+    }
+
+    /**
+     * Hides the update information section and restores main content.
+     */
+    function hideUpdateSection() {
+        const updateInfoSection = document.getElementById('update-info-section');
+        if (updateInfoSection) {
+            updateInfoSection.classList.add('hidden');
+            // Restore main content
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('header-section').style.display = 'block';
+            document.body.style.overflowY = 'auto'; // Enable scrolling
+        }
+    }
 </script>
 <script src="renderer.js"></script>
 </body>

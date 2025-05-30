@@ -24,7 +24,6 @@ const copyFileAsync = promisify(fs.copyFile);
 const unlinkAsync = promisify(fs.unlink); // For deleting temporary files
 
 let mainWindow; // Declare mainWindow globally so it can be accessed by autoUpdater events
-let updateProgressWindow; // Declare updateProgressWindow
 
 // Set the application user model ID for Windows (important for taskbar icon)
 // Replace 'your.app.id' with a unique identifier for your application.
@@ -67,31 +66,6 @@ function createWindow() {
     // Handle window close event
     mainWindow.on('closed', () => {
         mainWindow = null;
-        if (updateProgressWindow) updateProgressWindow.close();
-    });
-}
-
-function createUpdateProgressWindow() {
-    updateProgressWindow = new BrowserWindow({
-        width: 400,
-        height: 300,
-        modal: true,
-        parent: mainWindow,
-        show: false,
-        resizable: false,
-        autoHideMenuBar: true,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'), // You might need a separate preload for this window
-            contextIsolation: true,
-            nodeIntegration: false
-        }
-    });
-    updateProgressWindow.loadFile('update-progress.html');
-    updateProgressWindow.once('ready-to-show', () => {
-        updateProgressWindow.show();
-    });
-    updateProgressWindow.on('closed', () => {
-        updateProgressWindow = null;
     });
 }
 
@@ -399,56 +373,58 @@ ipcMain.handle('restart-app', () => {
 
 // --- Auto-Updater Events (Modified) ---
 
-autoUpdater.on('update-available', (info) => {
+autoUpdater.on('update-available', async (info) => {
     log.info('Update available:', info);
-    dialog.showMessageBox(mainWindow, {
+    // Ask the user if they want to download the update
+    const result = await dialog.showMessageBox(mainWindow, {
         type: 'info',
         title: 'Update Available',
         message: `A new version (${info.version}) is available. Do you want to download and install it?`,
         buttons: ['Yes', 'No']
-    }).then(result => {
-        if (result.response === 0) { // User clicked 'Yes'
-            createUpdateProgressWindow();
-            autoUpdater.downloadUpdate();
-            if (updateProgressWindow) {
-                updateProgressWindow.webContents.send('update-changelog', info.releaseNotes || 'No release notes available.');
-            }
-        }
     });
+
+    if (result.response === 0) { // User clicked 'Yes'
+        // Send update_available and changelog to the main window
+        mainWindow.webContents.send('update_available');
+        mainWindow.webContents.send('update-changelog', info.releaseNotes || 'No release notes available.');
+        autoUpdater.downloadUpdate(); // Start downloading the update
+    } else {
+        // User clicked 'No', hide the update section in the renderer
+        mainWindow.webContents.send('update-download-cancelled');
+    }
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
     log.info('Download progress:', progressObj);
-    if (updateProgressWindow) {
-        updateProgressWindow.webContents.send('download-progress', progressObj.percent);
-    }
+    // Send download progress to the main window
+    mainWindow.webContents.send('download-progress', progressObj.percent);
 });
 
 autoUpdater.on('update-downloaded', (info) => {
     log.info('Update downloaded:', info);
-    if (updateProgressWindow) {
-        updateProgressWindow.webContents.send('update-downloaded');
-        dialog.showMessageBox(updateProgressWindow, {
-            type: 'info',
-            title: 'Update Downloaded',
-            message: 'The update has been downloaded. Click "Restart Now" to apply it.',
-            buttons: ['Restart Now', 'Later']
-        }).then(result => {
-            if (result.response === 0) {
-                autoUpdater.quitAndInstall();
-            }
-        });
-    }
+    // Send update_downloaded event to the main window
+    mainWindow.webContents.send('update_downloaded');
+    // Show a dialog to the user in the main window asking to restart
+    dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        title: 'Update Downloaded',
+        message: 'The update has been downloaded. Click "Restart Now" to apply it.',
+        buttons: ['Restart Now', 'Later']
+    }).then(result => {
+        if (result.response === 0) { // User clicked 'Restart Now'
+            autoUpdater.quitAndInstall();
+        }
+    });
 });
 
 autoUpdater.on('error', (err) => {
     log.error('Update error:', err);
+    // Send update_error to the main window
+    mainWindow.webContents.send('update_error', err.message);
+    // Also show a dialog for critical errors
     dialog.showMessageBox(mainWindow, {
         type: 'error',
         title: 'Update Error',
         message: `An error occurred during update: ${err.message}`
     });
-    if (updateProgressWindow) {
-        updateProgressWindow.webContents.send('update-error', err.message);
-    }
 });
