@@ -22,6 +22,7 @@
     "electron": "^28.2.3",
     "electron-builder": "^24.13.3"
   },
+  
   "build": {
     "appId": "com.deadstudios.addonutils",
     "productName": "dead.s.add-on.utilities",
