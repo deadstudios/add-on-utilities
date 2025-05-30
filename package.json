@@ -62,7 +62,8 @@
       "node_modules/**/*",
       "build/**/*",
       "update-progress.js",
-      "update-progress.html"
+      "update-progress.html",
+      ".env"
     ],
     "publish": {
       "provider": "github",
