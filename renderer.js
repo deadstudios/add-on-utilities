@@ -11,6 +11,8 @@ const updaterBtn = document.getElementById('updater-btn');
 const obfuscatorSection = document.getElementById('obfuscator-section');
 const packagerSection = document.getElementById('packager-section');
 const creditsSection = document.getElementById('credits-section');
+const headerSection = document.getElementById('header-section'); // Get reference to the header section
+const body = document.body; // Get reference to the body element
 
 // Obfuscator elements
 const obfuscatorInputFolderBtn = document.getElementById('obfuscator-input-folder-btn');
@@ -18,7 +20,6 @@ const obfuscatorInputFolderPathSpan = document.getElementById('obfuscator-input-
 const obfuscatorOutputFolderBtn = document.getElementById('obfuscator-output-folder-btn');
 const obfuscatorOutputFolderPathSpan = document.getElementById('obfuscator-output-folder-path');
 const obfuscateCodeBtn = document.getElementById('obfuscate-code-btn');
-const obfuscatorOutput = document.getElementById('obfuscator-output');
 const backToMainObfuscator = document.getElementById('back-to-main-obfuscator');
 
 const compactCodeCheckbox = document.getElementById('compactCode');
@@ -30,12 +31,22 @@ const stringArrayCheckbox = document.getElementById('stringArray');
 const stringArrayShuffleCheckbox = document.getElementById('stringArrayShuffle');
 const stringArrayThresholdValueInput = document.getElementById('stringArrayThresholdValue');
 
+// New collapsible elements
+const toggleOptionsBtn = document.getElementById('toggle-options-btn');
+const obfuscationOptionsContent = document.getElementById('obfuscation-options-content');
+const toggleIcon = document.getElementById('toggle-icon');
+
+
 // Packager elements
 const bpFolderInputBtn = document.getElementById('bp-folder-input-btn');
 const bpFolderPathSpan = document.getElementById('bp-folder-path');
 const rpFolderInputBtn = document.getElementById('rp-folder-input-btn');
 const rpFolderPathSpan = document.getElementById('rp-folder-path');
+const packNameInput = document.getElementById('packNameInput'); // New: Pack Name Input
 const obfuscatePackagedCodeCheckbox = document.getElementById('obfuscatePackagedCode');
+const removeCommentsPackagedCodeCheckbox = document.getElementById('removeCommentsPackagedCode'); // New checkbox
+const minifyJsonFilesCheckbox = document.getElementById('minifyJsonFiles'); // New checkbox
+const compressImagesCheckbox = document.getElementById('compressImages'); // New checkbox
 const packageAddonBtn = document.getElementById('package-addon-btn');
 const backToMainPackager = document.getElementById('back-to-main-packager');
 
@@ -53,244 +64,365 @@ console.log('updaterBtn:', updaterBtn);
 console.log('obfuscatorSection:', obfuscatorSection);
 console.log('packagerSection:', packagerSection);
 console.log('creditsSection:', creditsSection);
+console.log('headerSection:', headerSection); // Log the new header section
 console.log('appVersionSpan:', appVersionSpan);
+console.log('toggleOptionsBtn:', toggleOptionsBtn);
+console.log('obfuscationOptionsContent:', obfuscationOptionsContent);
+console.log('toggleIcon:', toggleIcon);
+console.log('packNameInput:', packNameInput); // Log new input
+console.log('removeCommentsPackagedCodeCheckbox:', removeCommentsPackagedCodeCheckbox); // Log new checkbox
+console.log('minifyJsonFilesCheckbox:', minifyJsonFilesCheckbox); // Log new checkbox
+console.log('compressImagesCheckbox:', compressImagesCheckbox); // Log new checkbox
+
+
+/**
+ * Displays a temporary notification at the top middle of the screen.
+ * @param {string} message - The message to display.
+ * @param {'success' | 'error' | 'info' | 'warning'} type - The type of notification (influences styling).
+ */
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.classList.add(
+        'fixed', 'top-4', 'left-1/2', '-translate-x-1/2', 'p-4', 'rounded-lg', 'shadow-lg', 'text-white',
+        'z-50', 'transition-all', 'duration-300', 'ease-out', 'transform', 'scale-0', 'opacity-0'
+    );
+
+    // Apply type-specific styling
+    switch (type) {
+        case 'success':
+            notification.classList.add('bg-green-600');
+            break;
+        case 'error':
+            notification.classList.add('bg-red-600');
+            break;
+        case 'warning':
+            notification.classList.add('bg-yellow-600');
+            break;
+        case 'info':
+        default:
+            notification.classList.add('bg-blue-600');
+            break;
+    }
+
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+        notification.classList.remove('scale-0', 'opacity-0');
+        notification.classList.add('scale-100', 'opacity-100');
+    }, 10); // Small delay to ensure transition applies
+
+    // Animate out and remove after a delay
+    setTimeout(() => {
+        notification.classList.remove('scale-100', 'opacity-100');
+        notification.classList.add('scale-0', 'opacity-0');
+        notification.addEventListener('transitionend', () => {
+            notification.remove();
+        }, { once: true });
+    }, 3000); // Notification visible for 3 seconds
+}
 
 
 /**
  * Hides all main sections and displays the specified section.
+ * Also hides the main header and disables body scrolling.
  * @param {HTMLElement} sectionToShow - The section element to display.
  */
 function showSection(sectionToShow) {
-    mainMenu.classList.add('hidden');
-    obfuscatorSection.classList.add('hidden');
-    packagerSection.classList.add('hidden');
-    creditsSection.classList.add('hidden');
+    // Hide all main sections
+    if (mainMenu) mainMenu.classList.add('hidden');
+    if (obfuscatorSection) obfuscatorSection.classList.add('hidden');
+    if (packagerSection) packagerSection.classList.add('hidden');
+    if (creditsSection) creditsSection.classList.add('hidden');
+    
+    // Hide the header section
+    if (headerSection) headerSection.style.display = 'none'; 
 
-    sectionToShow.classList.remove('hidden');
+    // Show the requested section
+    if (sectionToShow) sectionToShow.classList.remove('hidden');
+
+    // Disable body scrolling when a section is active
+    body.style.overflowY = 'hidden';
 }
 
 /**
  * Hides all sections and displays the main menu.
+ * Also shows the main header and enables body scrolling.
  */
 function showMainMenu() {
-    mainMenu.classList.remove('hidden');
-    obfuscatorSection.classList.add('hidden');
-    packagerSection.classList.add('hidden');
-    creditsSection.classList.add('hidden');
+    // Show the main menu
+    if (mainMenu) mainMenu.classList.remove('hidden');
+    
+    // Hide all specific sections
+    if (obfuscatorSection) obfuscatorSection.classList.add('hidden');
+    if (packagerSection) packagerSection.classList.add('hidden');
+    if (creditsSection) creditsSection.classList.add('hidden');
+    
+    // Show the header section
+    if (headerSection) headerSection.style.display = 'block';
+
+    // Enable body scrolling when returning to the main menu
+    body.style.overflowY = 'auto';
 }
 
 // Set initial values for obfuscator options based on common defaults or provided bot.js logic
-compactCodeCheckbox.checked = true;
-controlFlowFlatteningCheckbox.checked = false;
-deadCodeInjectionCheckbox.checked = false;
-debugProtectionCheckbox.checked = false;
-disableConsoleOutputCheckbox.checked = true;
-stringArrayCheckbox.checked = true;
-stringArrayShuffleCheckbox.checked = true;
-stringArrayThresholdValueInput.value = 0.5;
+document.addEventListener('DOMContentLoaded', () => {
+    if (compactCodeCheckbox) compactCodeCheckbox.checked = true;
+    if (controlFlowFlatteningCheckbox) controlFlowFlatteningCheckbox.checked = false;
+    if (deadCodeInjectionCheckbox) deadCodeInjectionCheckbox.checked = false;
+    if (debugProtectionCheckbox) debugProtectionCheckbox.checked = false;
+    if (disableConsoleOutputCheckbox) disableConsoleOutputCheckbox.checked = true;
+    if (stringArrayCheckbox) stringArrayCheckbox.checked = true;
+    if (stringArrayShuffleCheckbox) stringArrayShuffleCheckbox.checked = true;
+    if (stringArrayThresholdValueInput) stringArrayThresholdValueInput.value = 0.5;
 
-// Enable/disable the stringArrayThresholdValueInput based on the stringArrayCheckbox state
-stringArrayCheckbox.addEventListener('change', () => {
-    stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
+    // Enable/disable the stringArrayThresholdValueInput based on the stringArrayCheckbox state
+    if (stringArrayCheckbox && stringArrayThresholdValueInput) {
+        stringArrayCheckbox.addEventListener('change', () => {
+            stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
+        });
+        // Set initial disabled state on load
+        stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
+    }
+
+    // Set initial values for packager options
+    if (obfuscatePackagedCodeCheckbox) obfuscatePackagedCodeCheckbox.checked = false;
+    if (removeCommentsPackagedCodeCheckbox) removeCommentsPackagedCodeCheckbox.checked = true; // Default to true
+    if (minifyJsonFilesCheckbox) minifyJsonFilesCheckbox.checked = true; // Default to true
+    if (compressImagesCheckbox) compressImagesCheckbox.checked = false; // Default to false
+
+    // Ensure body scrolling is enabled by default on load
+    body.style.overflowY = 'auto';
+
+    // Add event listener for the collapsible button
+    if (toggleOptionsBtn && obfuscationOptionsContent && toggleIcon) {
+        toggleOptionsBtn.addEventListener('click', () => {
+            obfuscationOptionsContent.classList.toggle('hidden');
+            // Rotate the arrow icon
+            if (obfuscationOptionsContent.classList.contains('hidden')) {
+                toggleIcon.style.transform = 'rotate(0deg)'; // Point down
+            } else {
+                toggleIcon.style.transform = 'rotate(180deg)'; // Point up
+            }
+        });
+    }
 });
-// Set initial disabled state on load
-stringArrayThresholdValueInput.disabled = !stringArrayCheckbox.checked;
 
 
 // --- Event Listeners for Main Menu Buttons ---
-
-// Obfuscator button click handler
-obfuscatorBtn.addEventListener('click', () => showSection(obfuscatorSection));
-
-// Packager button click handler
-packagerBtn.addEventListener('click', () => showSection(packagerSection));
-
-// Credits button click handler: fetches and displays app version
-creditsBtn.addEventListener('click', async () => {
-    const version = await window.electronAPI.getAppVersion();
-    appVersionSpan.textContent = version;
-    showSection(creditsSection);
-});
-
-// Updater button click handler: triggers update check
-updaterBtn.addEventListener('click', async () => {
-    // Trigger the update check via IPC. The main process will handle dialogs.
-    await window.electronAPI.checkForUpdates();
-    // Provide immediate feedback to the user that the check is in progress
-    await window.electronAPI.showMessageBox({
-        type: 'info',
-        title: 'Checking for Updates...',
-        message: 'Checking for new releases. You will be notified if an update is available.'
-    });
-});
-
-
-// --- Event Listeners for Back Buttons in sections ---
-backToMainObfuscator.addEventListener('click', showMainMenu);
-backToMainPackager.addEventListener('click', showMainMenu);
-backToMainCredits.addEventListener('click', showMainMenu);
-
-// --- Obfuscator Logic ---
-
-// Event listener for selecting the input script folder for obfuscation
-obfuscatorInputFolderBtn.addEventListener('click', async () => {
-    const folderPath = await window.electronAPI.selectFolder();
-    if (folderPath) {
-        obfuscatorInputFolderPathSpan.textContent = folderPath;
-    }
-});
-
-// Event listener for selecting the output folder for obfuscated scripts
-obfuscatorOutputFolderBtn.addEventListener('click', async () => {
-    const folderPath = await window.electronAPI.selectFolder();
-    if (folderPath) {
-        obfuscatorOutputFolderPathSpan.textContent = folderPath;
-    }
-});
-
-// Event listener for the "Obfuscate Code" button
-obfuscateCodeBtn.addEventListener('click', async () => {
-    const inputFolderPath = obfuscatorInputFolderPathSpan.textContent;
-    const outputFolderPath = obfuscatorOutputFolderPathSpan.textContent;
-
-    // Validate that both input and output folders are selected
-    if (!inputFolderPath || inputFolderPath === 'No folder selected.') {
-        await window.electronAPI.showMessageBox({
-            type: 'warning',
-            title: 'Input Folder Required',
-            message: 'Please select an input folder containing your JavaScript files.'
-        });
-        return;
-    }
-    if (!outputFolderPath || outputFolderPath === 'No folder selected.') {
-        await window.electronAPI.showMessageBox({
-            type: 'warning',
-            title: 'Output Folder Required',
-            message: 'Please select an output folder for the obfuscated files.'
-        });
-        return;
+document.addEventListener('DOMContentLoaded', () => {
+    // Obfuscator button click handler
+    if (obfuscatorBtn) {
+        obfuscatorBtn.addEventListener('click', () => showSection(obfuscatorSection));
     }
 
-    // Inform the user that obfuscation is in progress
-    await window.electronAPI.showMessageBox({
-        type: 'info',
-        title: 'Obfuscation in Progress',
-        message: 'Processing your JavaScript files. This might take a moment...'
-    });
+    // Packager button click handler
+    if (packagerBtn) {
+        packagerBtn.addEventListener('click', () => showSection(packagerSection));
+    }
 
-    // Gather all obfuscation options from the checkboxes and input field
-    const obfuscationOptions = {
-        compactCode: compactCodeCheckbox.checked,
-        controlFlowFlattening: controlFlowFlatteningCheckbox.checked,
-        deadCodeInjection: deadCodeInjectionCheckbox.checked,
-        debugProtection: debugProtectionCheckbox.checked,
-        disableConsoleOutput: disableConsoleOutputCheckbox.checked,
-        stringArray: stringArrayCheckbox.checked,
-        stringArrayShuffle: stringArrayShuffleCheckbox.checked,
-        stringArrayThreshold: parseFloat(stringArrayThresholdValueInput.value) // Ensure it's a number
-    };
-
-    // Call the main process to perform the obfuscation
-    const result = await window.electronAPI.obfuscateCode({
-        inputFolderPath,
-        outputFolderPath,
-        options: obfuscationOptions
-    });
-
-    // Display the result of the obfuscation
-    if (result.success) {
-        obfuscatorOutput.value = result.message || 'Obfuscation complete. Check your output folder.';
-        await window.electronAPI.showMessageBox({
-            type: 'info',
-            title: 'Obfuscation Complete',
-            message: result.message || 'JavaScript files obfuscated successfully!'
-        });
-    } else {
-        obfuscatorOutput.value = `Error: ${result.error}`;
-        await window.electronAPI.showMessageBox({
-            type: 'error',
-            title: 'Obfuscation Error',
-            message: `Failed to obfuscate files: ${result.error}`
+    // Credits button click handler: fetches and displays app version
+    if (creditsBtn) {
+        creditsBtn.addEventListener('click', async () => {
+            await displayAppVersion(); // Call the function here
+            showSection(creditsSection);
         });
     }
-});
 
-// --- Add-on Packager Logic ---
-
-// Event listener for selecting the Behavior Pack folder
-bpFolderInputBtn.addEventListener('click', async () => {
-    const folderPath = await window.electronAPI.selectFolder();
-    if (folderPath) {
-        bpFolderPathSpan.textContent = folderPath;
-    }
-});
-
-// Event listener for selecting the Resource Pack folder
-rpFolderInputBtn.addEventListener('click', async () => {
-    const folderPath = await window.electronAPI.selectFolder();
-    if (folderPath) {
-        rpFolderPathSpan.textContent = folderPath;
-    }
-});
-
-// Event listener for the "Package Add-on" button
-packageAddonBtn.addEventListener('click', async () => {
-    const bpFolderPath = bpFolderPathSpan.textContent;
-    const rpFolderPath = rpFolderPathSpan.textContent;
-    const obfuscatePackagedCode = obfuscatePackagedCodeCheckbox.checked;
-
-    // Validate that at least one pack folder is selected
-    if ((!bpFolderPath || bpFolderPath === 'No folder selected.') && (!rpFolderPath || rpFolderPath === 'No folder selected.')) {
-        await window.electronAPI.showMessageBox({
-            type: 'warning',
-            title: 'Folders Required',
-            message: 'Please select at least one pack folder (Behavior Pack or Resource Pack).'
-        });
-        return;
-    }
-
-    // Inform the user that packaging is in progress
-    await window.electronAPI.showMessageBox({
-        type: 'info',
-        title: 'Packaging Add-on',
-        message: 'Packaging your add-on. This might take a moment...'
-    });
-
-    // Gather obfuscation options to pass to the main process if obfuscation is requested
-    const obfuscationOptions = {
-        compactCode: compactCodeCheckbox.checked,
-        controlFlowFlattening: controlFlowFlatteningCheckbox.checked,
-        deadCodeInjection: deadCodeInjectionCheckbox.checked,
-        debugProtection: debugProtectionCheckbox.checked,
-        disableConsoleOutput: disableConsoleOutputCheckbox.checked,
-        stringArray: stringArrayCheckbox.checked,
-        stringArrayShuffle: stringArrayShuffleCheckbox.checked,
-        stringArrayThreshold: parseFloat(stringArrayThresholdValueInput.value)
-    };
-
-    // Call the main process to package the add-on
-    const result = await window.electronAPI.packageAddon({
-        bpFolderPath: bpFolderPath === 'No folder selected.' ? null : bpFolderPath, // Pass null if not selected
-        rpFolderPath: rpFolderPath === 'No folder selected.' ? null : rpFolderPath, // Pass null if not selected
-        obfuscatePackagedCode,
-        obfuscationOptions
-    });
-
-    // Display the result of the packaging
-    if (result.success) {
-        await window.electronAPI.showMessageBox({
-            type: 'info',
-            title: 'Packaging Complete',
-            message: result.message
-        });
-    } else {
-        await window.electronAPI.showMessageBox({
-            type: 'error',
-            title: 'Packaging Error',
-            message: `Failed to package add-on: ${result.error}`
+    // Updater button click handler: triggers update check
+    if (updaterBtn) {
+        updaterBtn.addEventListener('click', async () => {
+            // Trigger the update check via IPC. The main process will handle dialogs.
+            await window.electronAPI.checkForUpdates();
+            // Provide immediate feedback to the user that the check is in progress
+            showNotification('Checking for new releases. You will be notified if an update is available.', 'info');
         });
     }
+
+    // --- Event Listeners for Back Buttons in sections ---
+    if (backToMainObfuscator) {
+        backToMainObfuscator.addEventListener('click', showMainMenu);
+    }
+    if (backToMainPackager) {
+        backToMainPackager.addEventListener('click', showMainMenu);
+    }
+    if (backToMainCredits) {
+        backToMainCredits.addEventListener('click', showMainMenu);
+    }
+
+    // --- Obfuscator Logic ---
+
+    // Event listener for selecting the input script folder for obfuscation
+    if (obfuscatorInputFolderBtn) {
+        obfuscatorInputFolderBtn.addEventListener('click', async () => {
+            const folderPath = await window.electronAPI.selectFolder();
+            if (folderPath && obfuscatorInputFolderPathSpan) {
+                obfuscatorInputFolderPathSpan.textContent = folderPath;
+            }
+        });
+    }
+
+    // Event listener for selecting the output folder for obfuscated scripts
+    if (obfuscatorOutputFolderBtn) {
+        obfuscatorOutputFolderBtn.addEventListener('click', async () => {
+            const folderPath = await window.electronAPI.selectFolder();
+            if (folderPath && obfuscatorOutputFolderPathSpan) {
+                obfuscatorOutputFolderPathSpan.textContent = folderPath;
+            }
+        });
+    }
+
+    // Event listener for the "Obfuscate Code" button
+    if (obfuscateCodeBtn) {
+        obfuscateCodeBtn.addEventListener('click', async () => {
+            const inputFolderPath = obfuscatorInputFolderPathSpan ? obfuscatorInputFolderPathSpan.textContent : '';
+            const outputFolderPath = obfuscatorOutputFolderPathSpan ? obfuscatorOutputFolderPathSpan.textContent : '';
+
+            // Validate that both input and output folders are selected
+            if (!inputFolderPath || inputFolderPath === 'No folder selected.') {
+                showNotification('Please select an input folder containing your JavaScript files.', 'warning');
+                return;
+            }
+            if (!outputFolderPath || outputFolderPath === 'No folder selected.') {
+                showNotification('Please select an output folder for the obfuscated files.', 'warning');
+                return;
+            }
+
+            // Inform the user that obfuscation is in progress
+            showNotification('Processing your JavaScript files. This might take a moment...', 'info');
+
+            // Gather all obfuscation options from the checkboxes and input field
+            const obfuscationOptions = {
+                compactCode: compactCodeCheckbox ? compactCodeCheckbox.checked : true,
+                controlFlowFlattening: controlFlowFlatteningCheckbox ? controlFlowFlatteningCheckbox.checked : false,
+                deadCodeInjection: deadCodeInjectionCheckbox ? deadCodeInjectionCheckbox.checked : false,
+                debugProtection: debugProtectionCheckbox ? debugProtectionCheckbox.checked : false,
+                disableConsoleOutput: disableConsoleOutputCheckbox ? disableConsoleOutputCheckbox.checked : true,
+                stringArray: stringArrayCheckbox ? stringArrayCheckbox.checked : true,
+                stringArrayShuffle: stringArrayShuffleCheckbox ? stringArrayShuffleCheckbox.checked : true,
+                stringArrayThreshold: stringArrayThresholdValueInput ? parseFloat(stringArrayThresholdValueInput.value) : 0.5 // Ensure it's a number
+            };
+
+            // Call the main process to perform the obfuscation
+            const result = await window.electronAPI.obfuscateCode({
+                inputPath: inputFolderPath, // Changed to inputPath
+                outputPath: outputFolderPath, // Changed to outputPath
+                options: obfuscationOptions // Changed to options
+            });
+
+            // Display the result of the obfuscation
+            if (result.success) {
+                showNotification(result.message || 'Obfuscation complete. Check your output folder.', 'success');
+            } else {
+                showNotification(`Failed to obfuscate files: ${result.error}`, 'error');
+            }
+        });
+    }
+
+    // --- Add-on Packager Logic ---
+
+    // Event listener for selecting the Behavior Pack folder
+    if (bpFolderInputBtn) {
+        bpFolderInputBtn.addEventListener('click', async () => {
+            const folderPath = await window.electronAPI.selectFolder(); // No initial path for BP
+            if (folderPath && bpFolderPathSpan) {
+                bpFolderPathSpan.textContent = folderPath;
+            }
+        });
+    }
+
+    // Event listener for selecting the Resource Pack folder
+    if (rpFolderInputBtn) {
+        rpFolderInputBtn.addEventListener('click', async () => {
+            const bpPath = bpFolderPathSpan ? bpFolderPathSpan.textContent : '';
+            // Use the BP path as the initial path for RP if it's selected
+            const initialPath = (bpPath && bpPath !== 'No folder selected.') ? bpPath : null;
+            const folderPath = await window.electronAPI.selectFolder(initialPath);
+            if (folderPath && rpFolderPathSpan) {
+                rpFolderPathSpan.textContent = folderPath;
+            }
+        });
+    }
+
+    // Event listener for the "Package Add-on" button
+    if (packageAddonBtn) {
+        packageAddonBtn.addEventListener('click', async () => {
+            const bpFolderPath = bpFolderPathSpan ? bpFolderPathSpan.textContent : '';
+            const rpFolderPath = rpFolderPathSpan ? rpFolderPathSpan.textContent : '';
+            const packName = packNameInput ? packNameInput.value.trim() : ''; // Get pack name
+            const obfuscatePackagedCode = obfuscatePackagedCodeCheckbox ? obfuscatePackagedCodeCheckbox.checked : false;
+            const removeCommentsPackagedCode = removeCommentsPackagedCodeCheckbox ? removeCommentsPackagedCodeCheckbox.checked : false;
+            const minifyJsonFiles = minifyJsonFilesCheckbox ? minifyJsonFilesCheckbox.checked : false;
+            const compressImages = compressImagesCheckbox ? compressImagesCheckbox.checked : false;
+
+
+            // Validate that at least one pack folder is selected
+            if ((!bpFolderPath || bpFolderPath === 'No folder selected.') && (!rpFolderPath || rpFolderPath === 'No folder selected.')) {
+                showNotification('Please select at least one pack folder (Behavior Pack or Resource Pack).', 'warning');
+                return;
+            }
+
+            // Validate pack name
+            if (!packName) {
+                showNotification('Please enter a name for your add-on pack.', 'warning');
+                return;
+            }
+
+            // Inform the user that packaging is in progress
+            showNotification('Packaging your add-on. This might take a moment...', 'info');
+
+            // Gather obfuscation options to pass to the main process if obfuscation is requested
+            const obfuscationOptions = {
+                compactCode: compactCodeCheckbox ? compactCodeCheckbox.checked : true,
+                controlFlowFlattening: controlFlowFlatteningCheckbox ? controlFlowFlatteningCheckbox.checked : false,
+                deadCodeInjection: deadCodeInjectionCheckbox ? deadCodeInjectionCheckbox.checked : false,
+                debugProtection: debugProtectionCheckbox ? debugProtectionCheckbox.checked : false,
+                disableConsoleOutput: disableConsoleOutputCheckbox ? disableConsoleOutputCheckbox.checked : true,
+                stringArray: stringArrayCheckbox ? stringArrayCheckbox.checked : true,
+                stringArrayShuffle: stringArrayShuffleCheckbox ? stringArrayShuffleCheckbox.checked : true,
+                stringArrayThreshold: stringArrayThresholdValueInput ? parseFloat(stringArrayThresholdValueInput.value) : 0.5
+            };
+
+            // Call the main process to package the add-on
+            const result = await window.electronAPI.packageAddon({
+                behaviorPackPath: bpFolderPath === 'No folder selected.' ? null : bpFolderPath, // Pass null if not selected
+                resourcePackPath: rpFolderPath === 'No folder selected.' ? null : rpFolderPath, // Pass null if not selected
+                packName, // Pass the pack name
+                obfuscationOptions, // Pass obfuscation options
+                removeCommentsPackagedCode, // Pass new option
+                minifyJsonFiles, // Pass new option
+                compressImages // Pass new option
+            });
+
+            // Display the result of the packaging
+            if (result.success) {
+                showNotification(result.message, 'success');
+                // Open save dialog after successful packaging
+                const defaultFileName = `${packName.replace(/[^a-z0-9_.-]/gi, '_')}.mcaddon`; // Use sanitized pack name
+                const savePath = await window.electronAPI.showSaveDialog(defaultFileName);
+
+                if (savePath) {
+                    const moveResult = await window.electronAPI.moveFile(result.filePath, savePath);
+                    if (moveResult.success) {
+                        showNotification('Add-on saved successfully!', 'success');
+                    } else {
+                        showNotification(`Failed to save add-on: ${moveResult.error}`, 'error');
+                    }
+                } else {
+                    showNotification('Add-on packaged but not saved (save dialog cancelled).', 'warning');
+                }
+
+            } else {
+                showNotification(`Failed to package add-on: ${result.error}`, 'error');
+            }
+        });
+    }
+
+    // Also call displayAppVersion on startup, after the DOM is fully loaded
+    displayAppVersion();
 });
+
 
 // --- Electron-Updater Renderer-side Event Listeners ---
 
@@ -318,18 +450,13 @@ window.electronAPI.on('update_downloaded', async () => {
 window.electronAPI.on('update_error', (errorMessage) => {
     console.error('Update error in renderer:', errorMessage);
     // You could display this error message in a more user-friendly way in the UI
-    window.electronAPI.showMessageBox({
-        type: 'error',
-        title: 'Update Error',
-        message: `An error occurred during update: ${errorMessage}`
-    });
+    showNotification(`An error occurred during update: ${errorMessage}`, 'error');
 });
 
 // Function to fetch and display the app version from package.json
 async function displayAppVersion() {
     try {
         const version = await window.electronAPI.getAppVersion();
-        const appVersionSpan = document.getElementById('app-version');
         if (appVersionSpan) {
             appVersionSpan.textContent = version;
         }
@@ -338,12 +465,3 @@ async function displayAppVersion() {
         // Optionally display an error message in the UI
     }
 }
-
-// Call displayAppVersion when the credits section is shown
-creditsBtn.addEventListener('click', async () => {
-    await displayAppVersion(); // Call the function here
-    showSection(creditsSection);
-});
-
-// Also call it on startup, after the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', displayAppVersion);

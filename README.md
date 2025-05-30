@@ -54,9 +54,9 @@ The JavaScript Obfuscator is designed to protect your intellectual property with
 
 ### Add-on Packager
 
-This feature simplifies the process of preparing your Minecraft add-ons for distribution. It allows you to combine your Behavior Pack and Resource Pack folders into a single, installable .mcpack file.
+This feature simplifies the process of preparing your Minecraft add-ons for distribution. It allows you to combine your Behavior Pack and Resource Pack folders into a single, installable .mcaddon file.
 
-- **Streamlined Packaging**: Select your Behavior Pack (BP) and/or Resource Pack (RP) folders, and the utility will generate a standard .mcpack archive, ready for sharing and easy installation by other players.
+- **Streamlined Packaging**: Select your Behavior Pack (BP) and/or Resource Pack (RP) folders, and the utility will generate a standard .mcaddon archive, ready for sharing and easy installation by other players.
 
 - **Optional Obfuscation Integration**: You can choose to apply the JavaScript Obfuscator to your Behavior Pack's script files directly during the packaging process, ensuring your code is protected before distribution.
 
@@ -79,7 +79,7 @@ Dead's Add-on Utilities is built on the Electron framework, which allows for cro
 **Core Technologies**:
 - **Node.js**: Powers the backend operations in the Main Process, including file system (fs, path, util) and HTTP requests (https).
 - **javascript-obfuscator**: A powerful Node.js library used in the Main Process to perform the complex JavaScript code transformations.
-- **archiver**: A Node.js library used in the Main Process to create .zip archives (for .mcpack files).
+- **archiver**: A Node.js library used in the Main Process to create .zip archives (for .mcaddon files).
 - **electron-builder**: A comprehensive toolchain used for packaging and distributing the Electron application across various platforms (Windows, macOS, Linux). It handles creating installers and managing release artifacts.
 - **electron-updater**: A module integrated into the Main Process that leverages GitHub Releases to provide seamless automatic updates for the application.
 - **electron-log**: A logging utility for Electron applications, used here for robust logging of update processes and general application events.
@@ -163,7 +163,7 @@ The application features a straightforward interface with distinct sections:
 
 1. **Obfuscator**: Select an input folder containing your JavaScript files and an output folder. Choose your desired obfuscation options and click "Obfuscate Code".
 
-2. **Packager**: Select your Behavior Pack and/or Resource Pack folders. Optionally, enable "Obfuscate Behavior Pack Scripts" if you want to protect your code during packaging. Click "Package Add-on" to create the .mcpack file.
+2. **Packager**: Select your Behavior Pack and/or Resource Pack folders. Optionally, enable "Obfuscate Behavior Pack Scripts" if you want to protect your code during packaging. Click "Package Add-on" to create the .mcaddon file.
 
 3. **Credits**: View information about the application's development, technologies used, and version.
 
