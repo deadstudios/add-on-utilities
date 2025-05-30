@@ -1,5 +1,5 @@
 {
-  "name": "deads-addon-utilities",
+  "name": "deads-add-on-utilities",
   "version": "1.0.1",
   "description": "A utility for managing and packaging Minecraft add-ons.",
   "main": "main.js",
@@ -25,11 +25,11 @@
 
   "build": {
     "appId": "com.deadstudios.addonutils",
-    "productName": "dead.s.add-on.utilities",
+    "productName": "Dead's Add-on Utilities",
     "win": {
       "target": "nsis",
       "icon": "./build/icon.ico",
-      "artifactName": "${productName}-${version}-setup.${ext}"
+      "artifactName": "dead.s.add-on.utilities-${version}-setup.${ext}"
     },
     "nsis": {
       "installerIcon": "./build/icon.ico",
@@ -38,12 +38,12 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-${version}-setup.${ext}"
+      "artifactName": "dead.s.add-on.utilities-${version}-setup.${ext}"
     },
     "mac": {
       "target": "dmg",
       "icon": "./build/icon.icns",
-      "artifactName": "${productName}-${version}.${ext}"
+      "artifactName": "dead.s.add-on.utilities-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -52,7 +52,7 @@
         "tar.gz"
       ],
       "icon": "./build/icon.png",
-      "artifactName": "${productName}-${version}.${ext}"
+      "artifactName": "dead.s.add-on.utilities-${version}.${ext}"
     },
     "files": [
       "index.html",
