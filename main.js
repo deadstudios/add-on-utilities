@@ -196,7 +196,7 @@ async function processDirectory(inputDir, outputDir, options) {
  * Packages the Behavior Pack and Resource Pack into an mcpack file.
  * @param {object} packPaths - Object containing paths to the Behavior Pack and Resource Pack.
  * @param {string} outputDir - Directory to save the packaged mcpack file.
- * @param {string} packName - The desired name for the output .mcaddon file (without extension).
+ * @param {string} packName - The desired name for the output .mcpack file (without extension).
  * @param {object} processingOptions - Options for processing files (obfuscation, comments, json, images).
  * @returns {Promise<string>} - The path to the created mcpack file.
  */
@@ -204,7 +204,7 @@ async function packageAddon(packPaths, outputDir, packName, processingOptions) {
     let tempProcessingDir = null;
     try {
         await mkdirAsync(outputDir, { recursive: true });
-        const outputFileName = `${packName.replace(/[^a-z0-9_.-]/gi, '_')}.mcaddon`; // Sanitize pack name
+        const outputFileName = `${packName.replace(/[^a-z0-9_.-]/gi, '_')}.mcpack`; // Sanitize pack name
         const outputFilePath = path.join(outputDir, outputFileName);
         const output = fs.createWriteStream(outputFilePath);
         const archive = archiver('zip', { zlib: { level: 9 } }); // Compression level
@@ -265,9 +265,7 @@ app.whenReady().then(() => {
 
     // --- Auto-Updater ---
     // Check for updates after the window is created
-    if (process.env.NODE_ENV === 'production') {
-        autoUpdater.checkForUpdates();
-    }
+    autoUpdater.checkForUpdates(); // Force check for testing
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -364,7 +362,7 @@ ipcMain.handle('package-addon', async (event, data) => {
             packName, // Pass the packName here
             processingOptions
         );
-        
+
         return { success: true, message: 'Add-on packaged successfully!', filePath: packagedFilePath };
     } catch (error) {
         return { success: false, error: error.message }; // Return error.message for better detail
@@ -386,11 +384,9 @@ ipcMain.handle('show-message-box', async (event, options) => {
  */
 ipcMain.handle('check-for-updates', async () => {
     console.log('Manual update check triggered by renderer.');
-    if (process.env.NODE_ENV === 'production') {
-        autoUpdater.checkForUpdates();
-    } else {
-        log.info('Skip checkForUpdates because application is not packed and dev update config is not forced');
-    }
+    // Always check for updates regardless of NODE_ENV for testing/debugging purposes.
+    // In a production app, you might re-enable the 'production' check.
+    autoUpdater.checkForUpdates(); 
     return { message: 'Checking for updates...' }; // Return immediate feedback
 });
 
